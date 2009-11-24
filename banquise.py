@@ -27,25 +27,25 @@ def parseConfig():
     global pidfile
 
     if not os.path.exists(r'/etc/banquise.conf'):
-      print "Error: client configuration file missing !" 
+      print "Error: client configuration file missing !"
       exitClient()
     config=readConfig()
     #check server url
-    if not config.defaults()['server_url']: 
-     print "Error: client configuration, server_url is not set !" 
+    if not config.defaults()['server_url']:
+     print "Error: client configuration, server_url is not set !"
      exitClient()
     server_url=config.defaults()['server_url']
     #check client type
-    if not config.defaults()['type']: 
-     print "Error: client configuration, client type is not set !" 
+    if not config.defaults()['type']:
+     print "Error: client configuration, client type is not set !"
      exitClient()
-    if config.defaults()['type'] != 'REST' and config.defaults()['type'] != 'XMPP': 
-     print "Error: client configuration, client type value is wrong, it should be REST or XMPP !" 
+    if config.defaults()['type'] != 'REST' and config.defaults()['type'] != 'XMPP':
+     print "Error: client configuration, client type value is wrong, it should be REST or XMPP !"
      exitClient()
     type=config.defaults()['type']
     #check pid file
-    if not config.defaults()['pid']: 
-     print "Error: client configuration, pid setting not defined !" 
+    if not config.defaults()['pid']:
+     print "Error: client configuration, pid setting not defined !"
      exitClient()
     pidfile=config.defaults()['pid']
     #check md5str
@@ -58,22 +58,22 @@ def getmd5str(config):
     except KeyError:
       value=None
     return value
-  
- 
+
+
 def checkPid():
     if globals().has_key('pidfile'):
-    	if os.path.exists(pidfile):
-     		print "Error: client already running or dies unexpectly (pid file exists) !" 
-     		sys.exit(4)
-    	FILE = open(pidfile,"w")   
-    	FILE.write(str(os.getpid()))
-    	FILE.close()
+        if os.path.exists(pidfile):
+            print "Error: client already running or dies unexpectly (pid file exists) !"
+            sys.exit(4)
+        FILE = open(pidfile,"w")
+        FILE.write(str(os.getpid()))
+        FILE.close()
 
 def exitClient():
     if globals().has_key('pidfile'):
-    	os.remove(pidfile)
+        os.remove(pidfile)
     sys.exit(1)
-   
+
 def cleanupList(f):
     if f:
      return [i for i in list(f) if i] 
@@ -115,7 +115,7 @@ def call_setup():
      print "Error: client already configured with the server !"
      exitClient()
     print "configuring the server to use banquise..."
-    hostname = socket.gethostname()     
+    hostname = socket.gethostname()
     hash = md5.new()
     randstr="a"
     for i in range(5):
@@ -135,11 +135,11 @@ def call_setup():
           print "%s" % (children.text)
        if children.tag.find("status") != -1:
           if children.text == '1':
-    	    config=[]
-	    config.append("md5="+md5str+"\n")
-	    FILE = open("/etc/banquise.conf","a")   
-	    FILE.writelines(config)
-	    FILE.close()
+            config=[]
+        config.append("md5="+md5str+"\n")
+        FILE = open("/etc/banquise.conf","a")
+        FILE.writelines(config)
+        FILE.close()
 
 def set_release():
     check_validity(md5str)
