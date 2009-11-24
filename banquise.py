@@ -128,8 +128,6 @@ def call_setup():
     print "You need a valid license key." 
     license=raw_input("license key : ")
     xml = request({'method': "call_setup", 'arg1': license, 'arg2': hostname})
-    print xml
-    exit
     doc = ElementTree.fromstring(xml)
     for children in doc.getiterator():
        if children.tag.find("msg") != -1:
