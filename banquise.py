@@ -127,7 +127,10 @@ def call_setup():
     pub_ip="127.0.0.1"
     print "You need a valid license key." 
     license=raw_input("license key : ")
-    xml = request({'method': "call_setup", 'arg1': license, 'arg2': hostname})
+    xml = request({'method': "call_setup", 'license': license, 'hostname': hostname})
+    print xml
+    exitClient()
+
     doc = ElementTree.fromstring(xml)
     for children in doc.getiterator():
        if children.tag.find("msg") != -1:
