@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 import urllib
 import socket
 import sys
-import md5
+import hashlib
 import string
 import random
 import os
@@ -27,25 +27,25 @@ def parseConfig():
     global pidfile
 
     if not os.path.exists(r'/etc/banquise.conf'):
-      print "Error: client configuration file missing !"
+      print "Error: client configuration file missing !" 
       exitClient()
     config=readConfig()
     #check server url
-    if not config.defaults()['server_url']:
-     print "Error: client configuration, server_url is not set !"
+    if not config.defaults()['server_url']: 
+     print "Error: client configuration, server_url is not set !" 
      exitClient()
     server_url=config.defaults()['server_url']
     #check client type
-    if not config.defaults()['type']:
-     print "Error: client configuration, client type is not set !"
+    if not config.defaults()['type']: 
+     print "Error: client configuration, client type is not set !" 
      exitClient()
-    if config.defaults()['type'] != 'REST' and config.defaults()['type'] != 'XMPP':
-     print "Error: client configuration, client type value is wrong, it should be REST or XMPP !"
+    if config.defaults()['type'] != 'REST' and config.defaults()['type'] != 'XMPP': 
+     print "Error: client configuration, client type value is wrong, it should be REST or XMPP !" 
      exitClient()
     type=config.defaults()['type']
     #check pid file
-    if not config.defaults()['pid']:
-     print "Error: client configuration, pid setting not defined !"
+    if not config.defaults()['pid']: 
+     print "Error: client configuration, pid setting not defined !" 
      exitClient()
     pidfile=config.defaults()['pid']
     #check md5str
@@ -58,22 +58,22 @@ def getmd5str(config):
     except KeyError:
       value=None
     return value
-
-
+  
+ 
 def checkPid():
     if globals().has_key('pidfile'):
-        if os.path.exists(pidfile):
-            print "Error: client already running or dies unexpectly (pid file exists) !"
-            sys.exit(4)
-        FILE = open(pidfile,"w")
-        FILE.write(str(os.getpid()))
-        FILE.close()
+    	if os.path.exists(pidfile):
+     		print "Error: client already running or dies unexpectly (pid file exists) !" 
+     		sys.exit(4)
+    	FILE = open(pidfile,"w")   
+    	FILE.write(str(os.getpid()))
+    	FILE.close()
 
 def exitClient():
     if globals().has_key('pidfile'):
-        os.remove(pidfile)
+    	os.remove(pidfile)
     sys.exit(1)
-
+   
 def cleanupList(f):
     if f:
      return [i for i in list(f) if i] 
@@ -92,7 +92,7 @@ def readConfig():
 def request(args):
     global server_url
     params = urllib.urlencode(args)
-    return urllib.urlopen(server_url,params).read()
+    return urllib.urlopen(server_url+'/setup/',params).read()
 
 def call_test(md5str):
     if check_validity(md5str):
@@ -115,8 +115,8 @@ def call_setup():
      print "Error: client already configured with the server !"
      exitClient()
     print "configuring the server to use banquise..."
-    hostname = socket.gethostname()
-    hash = md5.new()
+    hostname = socket.gethostname()     
+    hash = hashlib.md5()
     randstr="a"
     for i in range(5):
       randstr=randstr+string.ascii_lowercase[random.randint(0,25)]
@@ -125,21 +125,22 @@ def call_setup():
     # TODO: retrieve the ip's
     priv_ip="127.0.0.1"
     pub_ip="127.0.0.1"
-    print "Authentication needed !" 
-    user=raw_input("login : ")
-    passwd=getpass.getpass("password : ")
-    xml = request({'method': "call_setup", 'arg1': user, 'arg2': passwd, 'arg3': hostname, 'arg4': md5str, 'arg5': priv_ip, 'arg6': pub_ip})
+    print "You need a valid license key." 
+    license=raw_input("license key : ")
+    xml = request({'method': "call_setup", 'arg1': license, 'arg2': hostname})
+    print xml
+    exit
     doc = ElementTree.fromstring(xml)
     for children in doc.getiterator():
        if children.tag.find("msg") != -1:
           print "%s" % (children.text)
        if children.tag.find("status") != -1:
           if children.text == '1':
-            config=[]
-        config.append("md5="+md5str+"\n")
-        FILE = open("/etc/banquise.conf","a")
-        FILE.writelines(config)
-        FILE.close()
+    	    config=[]
+	    config.append("md5="+md5str+"\n")
+	    FILE = open("/etc/banquise.conf","a")   
+	    FILE.writelines(config)
+	    FILE.close()
 
 def set_release():
     check_validity(md5str)

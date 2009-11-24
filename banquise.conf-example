@@ -1,4 +1,4 @@
 [DEFAULT]
-server_url= http://127.0.0.1:8000
+server_url= http://127.0.0.1:8000/web/json
 type= REST
 pid= /var/run/banquise.pid
