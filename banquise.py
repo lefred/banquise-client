@@ -19,12 +19,14 @@ global md5str
 global server_url
 global type
 global pidfile
+global config
 
 def parseConfig():
     global md5str
     global server_url
     global type
     global pidfile
+    global config
 
     if not os.path.exists(r'/etc/banquise.conf'):
       print "Error: client configuration file missing !" 
@@ -127,30 +129,25 @@ def call_setup():
     pub_ip="127.0.0.1"
     print "You need a valid license key." 
     license=raw_input("license key : ")
-    xml = request({'method': "call_setup", 'license': license, 'hostname': hostname})
+    release=get_release()
+    xml = request({'method': "call_setup", 'license': license, 'hostname': hostname, 'release': release})
     print xml
-    exitClient()
+    config.set("DEFAULT","md5",xml)
+    FILE = open("/etc/banquise.conf","a")   
+    FILE.writelines(config)
+    FILE.close()
 
-    doc = ElementTree.fromstring(xml)
-    for children in doc.getiterator():
-       if children.tag.find("msg") != -1:
-          print "%s" % (children.text)
-       if children.tag.find("status") != -1:
-          if children.text == '1':
-    	    config=[]
-	    config.append("md5="+md5str+"\n")
-	    FILE = open("/etc/banquise.conf","a")   
-	    FILE.writelines(config)
-	    FILE.close()
-
-def set_release():
-    check_validity(md5str)
+def get_release():
     # TODO : use lsb_release
     fobj = open("/etc/redhat-release",'r')
     try:
       release = fobj.readline()[:-1]
     finally:
       fobj.close
+    return release
+
+def set_release():
+    check_validity(md5str)
     xml = request({'method': "set_release", 'arg1': md5str, 'arg2': release})
     doc = ElementTree.fromstring(xml)
     for children in doc.getiterator():
