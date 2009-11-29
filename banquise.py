@@ -14,15 +14,14 @@ import yum
 from StringIO import StringIO
 
 
-##global md5str='098f6bcd4621d373cade4e832627b4f6'
-global md5str
+global uuid
 global server_url
 global type
 global pidfile
 global config
 
 def parseConfig():
-    global md5str
+    global uuid
     global server_url
     global type
     global pidfile
@@ -50,13 +49,13 @@ def parseConfig():
      print "Error: client configuration, pid setting not defined !" 
      exitClient()
     pidfile=config.defaults()['pid']
-    #check md5str
-    md5str=getmd5str(config)
+    #check uuid
+    uuid=getuuid(config)
     return True
 
-def getmd5str(config):
+def getuuid(config):
     try: 
-      value=config.defaults()['md5']
+      value=config.defaults()['uuid']
     except KeyError:
       value=None
     return value
@@ -94,36 +93,36 @@ def readConfig():
 def request(args):
     global server_url
     params = urllib.urlencode(args)
-    return urllib.urlopen(server_url+'/setup/',params).read()
+    METHOD = {
+      "call_setup": "/setup/",
+      "call_test" : "/test/",
+      "set_release": "/set_release/",
+    }
+    return urllib.urlopen(server_url+METHOD.get(args.get('method')),params).read()
 
-def call_test(md5str):
-    if check_validity(md5str):
+def call_test(uuid):
+    if check_validity(uuid):
           print "Communication with server ok"
 
-def check_validity(md5str):
-    xml = request({'method': "test", 'arg1': md5str})
-    doc = ElementTree.fromstring(xml)
-    for children in doc.getiterator():
-       if children.tag.find("msg") != -1:
-          if children.text == 'Id not found':
-            print "Error: client key is invalid or expired !"
-            exitClient()
-          return True
-    # TODO check the contract validity
+def check_validity(uuid):
+    xml = request({'method': "call_test", 'uuid': uuid})
+    if xml == "OK":
+        return True
+    elif xml == "ERROR2":
+        print "ERROR: contract is expired for this host !"
+    elif xml == "ERROR3":
+        print "ERROR: host not found on the server !"
+    else:
+        print "ERROR: unexpected error !" 
+    exitClient()
 
 def call_setup():
-    global md5str
-    if not md5str == None:
+    global uuid
+    if not uuid == None:
      print "Error: client already configured with the server !"
      exitClient()
     print "configuring the server to use banquise..."
     hostname = socket.gethostname()     
-    hash = hashlib.md5()
-    randstr="a"
-    for i in range(5):
-      randstr=randstr+string.ascii_lowercase[random.randint(0,25)]
-    hash.update(hostname+randstr)
-    md5str=hash.hexdigest()
     # TODO: retrieve the ip's
     priv_ip="127.0.0.1"
     pub_ip="127.0.0.1"
@@ -131,11 +130,13 @@ def call_setup():
     license=raw_input("license key : ")
     release=get_release()
     xml = request({'method': "call_setup", 'license': license, 'hostname': hostname, 'release': release})
+    if xml == "ERROR1":
+        print "ERROR: this host (or another with the same name) is already linked to a valid contract!"
+        exitClient()
     print xml
-    config.set("DEFAULT","md5",xml)
-    FILE = open("/etc/banquise.conf","a")   
-    FILE.writelines(config)
-    FILE.close()
+    config.set("DEFAULT","uuid",xml)
+    with open("/etc/banquise.conf","wb") as configfile:    
+     config.write(configfile)
 
 def get_release():
     # TODO : use lsb_release
@@ -147,15 +148,19 @@ def get_release():
     return release
 
 def set_release():
-    check_validity(md5str)
-    xml = request({'method': "set_release", 'arg1': md5str, 'arg2': release})
-    doc = ElementTree.fromstring(xml)
-    for children in doc.getiterator():
-       if children.tag.find("msg") != -1:
-          print "%s" % (children.text)
-
+    global uuid
+    release = get_release()
+    check_validity(uuid)
+    xml = request({'method': "set_release", 'uuid': uuid, 'release': release})
+    if xml == "OK":
+        print "Release set to " + release
+        return True
+    else:
+        print "ERROR: unexpected error!"
+        exitClient()
+        
 def send_updates(): 
-    check_validity(md5str)
+    check_validity(uuid)
     # search for local updates
     my = yum.YumBase()
     my.doRepoSetup()
@@ -166,7 +171,7 @@ def send_updates():
     for children in my.up.getUpdatesList():
         #print("name: %s  arch: %s version: %s release: %s") % (children[0],children[1],children[3],children[4])
         str=str+children[0]+","+children[1]+","+children[3]+","+children[4]+"|"
-    xml = request({'method': "send_updates", 'arg1': md5str, 'arg2': str[:-1]})
+    xml = request({'method': "send_updates", 'arg1': uuid, 'arg2': str[:-1]})
     doc = ElementTree.fromstring(xml)
     for children in doc.getiterator():
        if children.tag.find("msg") != -1:
@@ -198,7 +203,7 @@ def send_updates():
         print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
         #str=str+hdr['name']+","+hdr['arch']+","+children['version']+","+children['release']+"|"
         str="%s%s,%s,%s,%s|" % (str,hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
-      xml = request({'method': "packs_done", 'arg1': md5str, 'arg2': str[:-1]})
+      xml = request({'method': "packs_done", 'arg1': uuid, 'arg2': str[:-1]})
       doc = ElementTree.fromstring(xml)
       for children in doc.getiterator():
           if children.tag.find("msg") != -1:
@@ -214,10 +219,10 @@ else:
   checkPid()
   if sys.argv[1]   == 'setup':
         call_setup()
-        set_release()
+        # set_release()
   else: 
      if sys.argv[1]   == 'test':
-        call_test(md5str);
+        call_test(uuid);
      elif sys.argv[1] == 'setrel':
         set_release()
      elif sys.argv[1] == 'update':
