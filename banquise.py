@@ -96,6 +96,7 @@ def request(args):
     METHOD = {
       "call_setup": "/setup/",
       "call_test" : "/test/",
+      "call_send_update" : "/update/",
       "set_release": "/set_release/",
     }
     return urllib.urlopen(server_url+METHOD.get(args.get('method')),params).read()
@@ -171,43 +172,43 @@ def send_updates():
     for children in my.up.getUpdatesList():
         #print("name: %s  arch: %s version: %s release: %s") % (children[0],children[1],children[3],children[4])
         str=str+children[0]+","+children[1]+","+children[3]+","+children[4]+"|"
-    xml = request({'method': "send_updates", 'arg1': uuid, 'arg2': str[:-1]})
-    doc = ElementTree.fromstring(xml)
-    for children in doc.getiterator():
-       if children.tag.find("msg") != -1:
-          print "%s" % (children.text)
-       if children.tag.find("toinstall") != -1:
-          print "do this : yum update "+children.text
-          myPckList=children.text.split(' ')
-          for element in myPckList:
-             var=element.split(':')
-             mylist = my.pkgSack.searchNevra(name=var[0],ver=var[1],rel=var[2])
-             for po in mylist:
-               my.update(po)
+    xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': str[:-1]})
+#    doc = ElementTree.fromstring(xml)
+#    for children in doc.getiterator():
+#       if children.tag.find("msg") != -1:
+#          print "%s" % (children.text)
+#       if children.tag.find("toinstall") != -1:
+#          print "do this : yum update "+children.text
+#          myPckList=children.text.split(' ')
+#          for element in myPckList:
+#             var=element.split(':')
+#             mylist = my.pkgSack.searchNevra(name=var[0],ver=var[1],rel=var[2])
+#             for po in mylist:
+#               my.update(po)
              #os.system("yum update "+children.text) 
              #xml = request({'method': "updates done", 'arg1': md5str, 'arg2': children.text})
-    my.buildTransaction()
-    saveout = sys.stdout
-    sys.stdout = StringIO()
-    my.processTransaction()
-    sys.stdout = saveout
+#    my.buildTransaction()
+#    saveout = sys.stdout
+#    sys.stdout = StringIO()
+#    my.processTransaction()
+#    sys.stdout = saveout
     #TODO retrieve the installed packages and notify the database
     #for children in my.ts.ts.getKeys():
     #  print children
-    myValues =  my.ts.ts.getKeys()
-    if myValues == None:
-       print "nothing set to update"
-    else:
-      str=""
-      for (hdr, path) in cleanupList(myValues):
-        print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
-        #str=str+hdr['name']+","+hdr['arch']+","+children['version']+","+children['release']+"|"
-        str="%s%s,%s,%s,%s|" % (str,hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
-      xml = request({'method': "packs_done", 'arg1': uuid, 'arg2': str[:-1]})
-      doc = ElementTree.fromstring(xml)
-      for children in doc.getiterator():
-          if children.tag.find("msg") != -1:
-               print "%s" % (children.text)
+#    myValues =  my.ts.ts.getKeys()
+#    if myValues == None:
+#       print "nothing set to update"
+#    else:
+#      str=""
+#      for (hdr, path) in cleanupList(myValues):
+#        print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
+#        #str=str+hdr['name']+","+hdr['arch']+","+children['version']+","+children['release']+"|"
+#        str="%s%s,%s,%s,%s|" % (str,hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
+#      xml = request({'method': "packs_done", 'arg1': uuid, 'arg2': str[:-1]})
+#      doc = ElementTree.fromstring(xml)
+#      for children in doc.getiterator():
+#          if children.tag.find("msg") != -1:
+#               print "%s" % (children.text)
 
 #if __main__ == 
 # Main program
@@ -219,7 +220,6 @@ else:
   checkPid()
   if sys.argv[1]   == 'setup':
         call_setup()
-        # set_release()
   else: 
      if sys.argv[1]   == 'test':
         call_test(uuid);
