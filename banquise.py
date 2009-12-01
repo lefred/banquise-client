@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from xml.etree import ElementTree
+import json
 import urllib
 import socket
 import sys
@@ -98,6 +98,7 @@ def request(args):
       "call_test" : "/test/",
       "call_send_update" : "/update/",
       "set_release": "/set_release/",
+      "call_packs_done": "/packdone/",
     }
     return urllib.urlopen(server_url+METHOD.get(args.get('method')),params).read()
 
@@ -173,42 +174,32 @@ def send_updates():
         #print("name: %s  arch: %s version: %s release: %s") % (children[0],children[1],children[3],children[4])
         str=str+children[0]+","+children[1]+","+children[3]+","+children[4]+"|"
     xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': str[:-1]})
-#    doc = ElementTree.fromstring(xml)
-#    for children in doc.getiterator():
-#       if children.tag.find("msg") != -1:
-#          print "%s" % (children.text)
-#       if children.tag.find("toinstall") != -1:
-#          print "do this : yum update "+children.text
-#          myPckList=children.text.split(' ')
-#          for element in myPckList:
-#             var=element.split(':')
-#             mylist = my.pkgSack.searchNevra(name=var[0],ver=var[1],rel=var[2])
-#             for po in mylist:
-#               my.update(po)
-             #os.system("yum update "+children.text) 
-             #xml = request({'method': "updates done", 'arg1': md5str, 'arg2': children.text})
-#    my.buildTransaction()
-#    saveout = sys.stdout
-#    sys.stdout = StringIO()
-#    my.processTransaction()
-#    sys.stdout = saveout
+    print xml
+    for children in json.loads(xml):
+          print "do this : yum update "+children
+          myPckList=children.split(',')
+          mylist = my.pkgSack.searchNevra(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
+          for po in mylist:
+             my.update(po)
+    my.buildTransaction()
+    saveout = sys.stdout
+    sys.stdout = StringIO()
+    my.processTransaction()
+    sys.stdout = saveout
     #TODO retrieve the installed packages and notify the database
     #for children in my.ts.ts.getKeys():
     #  print children
-#    myValues =  my.ts.ts.getKeys()
-#    if myValues == None:
-#       print "nothing set to update"
-#    else:
-#      str=""
-#      for (hdr, path) in cleanupList(myValues):
-#        print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
-#        #str=str+hdr['name']+","+hdr['arch']+","+children['version']+","+children['release']+"|"
-#        str="%s%s,%s,%s,%s|" % (str,hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
-#      xml = request({'method': "packs_done", 'arg1': uuid, 'arg2': str[:-1]})
-#      doc = ElementTree.fromstring(xml)
-#      for children in doc.getiterator():
-#          if children.tag.find("msg") != -1:
-#               print "%s" % (children.text)
+    myValues =  my.ts.ts.getKeys()
+    if myValues == None:
+       print "nothing set to update"
+    else:
+      packages_updated=[]
+      for (hdr, path) in cleanupList(myValues):
+        print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
+        packages_updated.append("%s,%s,%s,%s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release']))
+        json_value = json.dumps(packages_updated)
+        xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value})
+        print xml
 
 #if __main__ == 
 # Main program
