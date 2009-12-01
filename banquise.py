@@ -169,11 +169,11 @@ def send_updates():
     my.doSackSetup()
     my.doTsSetup()
     my.doRpmDBSetup()
-    str=""
+    packages_to_update=[]
     for children in my.up.getUpdatesList():
-        #print("name: %s  arch: %s version: %s release: %s") % (children[0],children[1],children[3],children[4])
-        str=str+children[0]+","+children[1]+","+children[3]+","+children[4]+"|"
-    xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': str[:-1]})
+        packages_to_update.append("%s,%s,%s,%s" % (children[0],children[1],children[3],children[4]))
+    json_value = json.dumps(packages_to_update)
+    xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value})
     print xml
     for children in json.loads(xml):
           print "do this : yum update "+children
