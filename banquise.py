@@ -176,7 +176,7 @@ def send_updates():
     xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value})
     print xml
     for children in json.loads(xml):
-          print "do this : yum update "+children
+          #print "do this : yum update "+children
           myPckList=children.split(',')
           mylist = my.pkgSack.searchNevra(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
           for po in mylist:
@@ -184,7 +184,12 @@ def send_updates():
     my.buildTransaction()
     saveout = sys.stdout
     sys.stdout = StringIO()
-    my.processTransaction()
+    try:
+        my.processTransaction()
+    except: 
+        sys.stdout = saveout
+        print "Error: unexpected error !" 
+        exitClient()
     sys.stdout = saveout
     #TODO retrieve the installed packages and notify the database
     #for children in my.ts.ts.getKeys():
