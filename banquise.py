@@ -12,6 +12,10 @@ import getpass
 from ConfigParser import *
 import yum
 from StringIO import StringIO
+from socket import *
+import fcntl
+import struct
+
 
 
 global uuid
@@ -118,6 +122,11 @@ def check_validity(uuid):
         print "ERROR: unexpected error !" 
     exitClient()
 
+def get_ip_address(ifname):
+
+    s = socket(AF_INET, SOCK_STREAM)
+    return inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', ifname[:15]))[20:24])
+
 def call_setup():
     global uuid
     if not uuid == None:
@@ -125,13 +134,20 @@ def call_setup():
      exitClient()
     print "configuring the server to use banquise..."
     hostname = socket.gethostname()     
-    # TODO: retrieve the ip's
-    priv_ip="127.0.0.1"
-    pub_ip="127.0.0.1"
+    try:
+        priv_ip=get_ip_address('eth0')
+    except:
+        try:
+            priv_ip=get_ip_address('eth1') 
+        except:
+            try:
+                priv_ip=get_ip_address('wlan0')
+            except:
+                priv_ip=get_ip_address('lo')
     print "You need a valid license key." 
     license=raw_input("license key : ")
     release=get_release()
-    xml = request({'method': "call_setup", 'license': license, 'hostname': hostname, 'release': release})
+    xml = request({'method': "call_setup", 'license': license, 'hostname': hostname, 'release': release, 'priv_ip': priv_ip})
     if xml == "ERROR1":
         print "ERROR: this host (or another with the same name) is already linked to a valid contract!"
         exitClient()
