@@ -119,7 +119,7 @@ def check_validity(uuid):
     elif xml == "ERROR3":
         print "ERROR: host not found on the server !"
     else:
-        print "ERROR: unexpected error !" 
+        print "ERROR: unexpected error on the server probably!" 
     exitClient()
 
 def get_ip_address(ifname):
@@ -197,10 +197,11 @@ def send_updates():
           myPckList=children.split(',')
           mylist = my.pkgSack.searchNevra(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
           if not mylist:
+              print "skipping %s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3])
               packages_skipped.append("%s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3]))
           else:
              for po in mylist:
-                 my.update(po)
+                my.update(po)
     my.buildTransaction()
     saveout = sys.stdout
     sys.stdout = StringIO()
@@ -217,6 +218,11 @@ def send_updates():
     myValues =  my.ts.ts.getKeys()
     if myValues == None:
        print "nothing set to update"
+       if packages_skipped:
+          json_value = json.dumps("")
+          json_value_skip = json.dumps(packages_skipped)
+          xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
+          print xml
     else:
       packages_updated=[]
       for (hdr, path) in cleanupList(myValues):
