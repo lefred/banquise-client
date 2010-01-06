@@ -186,6 +186,7 @@ def send_updates():
     my.doTsSetup()
     my.doRpmDBSetup()
     packages_to_update=[]
+    packages_skipped=[]
     for children in my.up.getUpdatesList():
         packages_to_update.append("%s,%s,%s,%s" % (children[0],children[1],children[3],children[4]))
     json_value = json.dumps(packages_to_update)
@@ -195,8 +196,11 @@ def send_updates():
           #print "do this : yum update "+children
           myPckList=children.split(',')
           mylist = my.pkgSack.searchNevra(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
-          for po in mylist:
-             my.update(po)
+          if not mylist:
+              packages_skipped.append("%s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3]))
+          else:
+             for po in mylist:
+                 my.update(po)
     my.buildTransaction()
     saveout = sys.stdout
     sys.stdout = StringIO()
@@ -219,7 +223,8 @@ def send_updates():
         print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
         packages_updated.append("%s,%s,%s,%s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release']))
         json_value = json.dumps(packages_updated)
-        xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value})
+        json_value_skip = json.dumps(packages_skipped)
+        xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
         print xml
 
 #if __main__ == 
