@@ -228,10 +228,10 @@ def send_updates():
       for (hdr, path) in cleanupList(myValues):
         print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
         packages_updated.append("%s,%s,%s,%s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release']))
-        json_value = json.dumps(packages_updated)
-        json_value_skip = json.dumps(packages_skipped)
-        xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
-        print xml
+      json_value = json.dumps(packages_updated)
+      json_value_skip = json.dumps(packages_skipped)
+      xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
+      print xml
 
 #if __main__ == 
 # Main program
