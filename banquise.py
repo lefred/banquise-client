@@ -1,4 +1,20 @@
 #!/usr/bin/python
+# banquise client : client program to send packages updates and retrieve
+# a list of package to install
+#    Copyright (C) 2010  Frederic Descamps - www.lefred.be
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import urllib
@@ -12,7 +28,6 @@ import getpass
 from ConfigParser import *
 import yum
 from StringIO import StringIO
-from socket import *
 import fcntl
 import struct
 
@@ -124,8 +139,8 @@ def check_validity(uuid):
 
 def get_ip_address(ifname):
 
-    s = socket(AF_INET, SOCK_STREAM)
-    return inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', ifname[:15]))[20:24])
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', ifname[:15]))[20:24])
 
 def call_setup():
     global uuid
@@ -209,7 +224,7 @@ def send_updates():
         my.processTransaction()
     except: 
         sys.stdout = saveout
-        print "Error: unexpected error !" 
+        print "Error: unexpected error during transaction !" 
         exitClient()
     sys.stdout = saveout
     #TODO retrieve the installed packages and notify the database
