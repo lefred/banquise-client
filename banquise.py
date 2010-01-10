@@ -30,6 +30,7 @@ import yum
 from StringIO import StringIO
 import fcntl
 import struct
+import getpass
 
 
 
@@ -45,6 +46,8 @@ def parseConfig():
     global type
     global pidfile
     global config
+    global login
+    global passwd
 
     if not os.path.exists(r'/etc/banquise.conf'):
       print "Error: client configuration file missing !" 
@@ -68,6 +71,14 @@ def parseConfig():
      print "Error: client configuration, pid setting not defined !" 
      exitClient()
     pidfile=config.defaults()['pid']
+    try:
+        login=config.defaults()['login']
+    except:
+        login=""
+    try:
+        passwd=config.defaults()['passwd']
+    except:
+        passwd=""
     #check uuid
     uuid=getuuid(config)
     return True
@@ -118,6 +129,7 @@ def request(args):
       "call_send_update" : "/update/",
       "set_release": "/set_release/",
       "call_packs_done": "/packdone/",
+      "call_send_list" : "/addpack/",
     }
     return urllib.urlopen(server_url+METHOD.get(args.get('method')),params).read()
 
@@ -248,6 +260,27 @@ def send_updates():
       xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
       print xml
 
+def send_list(): 
+    global login
+    global passwd
+    check_validity(uuid)
+    my = yum.YumBase()
+    packages_to_add=[]
+    packages_skipped=[]
+    print "You need an admin login to perform this operation."
+    if not login:
+        login=raw_input("Login : ")
+    if not passwd:
+        passwd=getpass.getpass()
+    
+    ygh = my.doPackageLists()
+    for children in ygh.available:
+        packages_to_add.append("%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4]))
+    json_value = json.dumps(packages_to_add)
+    xml = request({'method': "call_send_list", 'login': login, 
+                   'passwd': passwd, 'uuid': uuid, 'packages': json_value})
+    print xml
+
 #if __main__ == 
 # Main program
 if len(sys.argv) != 2:
@@ -265,6 +298,8 @@ else:
         set_release()
      elif sys.argv[1] == 'update':
         send_updates()
+     elif sys.argv[1] == 'list':
+        send_list()
      else:
         print "Error: %s command not found !" % (sys.argv[1])
 exitClient()
