@@ -1,5 +1,5 @@
 Name:		banquise-client
-Version:	0.2
+Version:	0.3
 Release:	1
 License:	GPLv3
 Group:		System
