@@ -289,7 +289,7 @@ def send_list():
     
     ygh = my.doPackageLists()
     for children in ygh.available:
-        packages_to_add.append("%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4]),children.repo)
+        packages_to_add.append("%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo))
     json_value = json.dumps(packages_to_add)
     xml = request({'method': "call_send_list", 'login': login, 
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
