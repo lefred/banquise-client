@@ -130,6 +130,7 @@ def request(args):
       "set_release": "/set_release/",
       "call_packs_done": "/packdone/",
       "call_send_list" : "/addpack/",
+      "call_send_install" : "/install/",
     }
     return urllib.urlopen(server_url+METHOD.get(args.get('method')),params).read()
 
@@ -215,10 +216,12 @@ def send_updates():
     packages_to_update=[]
     packages_skipped=[]
     for children in my.up.getUpdatesList():
-        packages_to_update.append("%s,%s,%s,%s" % (children[0],children[1],children[3],children[4]))
+        matches=my.pkgSack.searchNevra(name=children[0], arch=children[1], epoch=children[2],
+                                       ver=children[3], rel=children[4])
+        packages_to_update.append("%s,%s,%s,%s,%s" % (children[0],children[1],children[3],children[4],matches[0].repo))
     json_value = json.dumps(packages_to_update)
     xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value})
-    print xml
+    print "to update : " +str(xml)
     for children in json.loads(xml):
           #print "do this : yum update "+children
           myPckList=children.split(',')
@@ -229,6 +232,17 @@ def send_updates():
           else:
              for po in mylist:
                 my.update(po)
+    xml = request({'method': "call_send_install", 'uuid': uuid})
+    print "to install : " +str(xml)
+    for children in json.loads(xml):
+          myPckList=children.split(',')
+          mylist = my.pkgSack.searchNevra(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
+          if not mylist:
+              print "skipping %s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3])
+              packages_skipped.append("%s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3]))
+          else:
+             for po in mylist:
+                my.install(po)
     my.buildTransaction()
     saveout = sys.stdout
     sys.stdout = StringIO()
@@ -275,7 +289,7 @@ def send_list():
     
     ygh = my.doPackageLists()
     for children in ygh.available:
-        packages_to_add.append("%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4]))
+        packages_to_add.append("%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4]),children.repo)
     json_value = json.dumps(packages_to_add)
     xml = request({'method': "call_send_list", 'login': login, 
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
