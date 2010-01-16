@@ -40,6 +40,9 @@ global type
 global pidfile
 global config
 
+def showVersion():
+    return "0.5"
+
 def parseConfig():
     global uuid
     global server_url
@@ -314,6 +317,8 @@ else:
         send_updates()
      elif sys.argv[1] == 'list':
         send_list()
+     elif sys.argv[1] == 'version':
+        print showVersion()
      else:
         print "Error: %s command not found !" % (sys.argv[1])
 exitClient()
