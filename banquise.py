@@ -39,6 +39,7 @@ global server_url
 global type
 global pidfile
 global config
+global postscript
 
 def showVersion():
     return "0.5"
@@ -51,6 +52,7 @@ def parseConfig():
     global config
     global login
     global passwd
+    global postscript
 
     if not os.path.exists(r'/etc/banquise.conf'):
       print "Error: client configuration file missing !" 
@@ -82,6 +84,10 @@ def parseConfig():
         passwd=config.defaults()['passwd']
     except:
         passwd=""
+    try:
+        postscript=config.defaults()['postscript']
+    except:
+        postscript=""
     #check uuid
     uuid=getuuid(config)
     return True
@@ -276,7 +282,9 @@ def send_updates():
       json_value_skip = json.dumps(packages_skipped)
       xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
       print xml
-
+      if postscript:
+          status,output = commands.getstatusoutput(postscript) 
+          
 def send_list(): 
     global login
     global passwd
