@@ -31,7 +31,7 @@ from StringIO import StringIO
 import fcntl
 import struct
 import getpass
-
+import commands
 
 
 global uuid
