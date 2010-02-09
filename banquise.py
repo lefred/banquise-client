@@ -26,7 +26,6 @@ import random
 import os
 import getpass
 from ConfigParser import *
-import yum
 from StringIO import StringIO
 import fcntl
 import struct
@@ -53,6 +52,8 @@ def parseConfig():
     global login
     global passwd
     global postscript
+    global backend
+    global myBackend
 
     if not os.path.exists(r'/etc/banquise.conf'):
       print "Error: client configuration file missing !" 
@@ -71,6 +72,18 @@ def parseConfig():
      print "Error: client configuration, client type value is wrong, it should be REST or XMPP !" 
      exitClient()
     type=config.defaults()['type']
+    
+    #check backend
+    if not config.defaults()['backend']: 
+     print "Error: client configuration, client backend is not set !" 
+     exitClient()
+    if config.defaults()['backend'] != 'yum' and config.defaults()['backend'] != 'smart': 
+     print "Error: client configuration, client backend value is wrong, it should be YUM or SMART !" 
+     exitClient()
+    backend=config.defaults()['backend']
+    
+    myBackend = __import__(backend + "backend")
+    
     #check pid file
     if not config.defaults()['pid']: 
      print "Error: client configuration, pid setting not defined !" 
@@ -102,16 +115,16 @@ def getuuid(config):
  
 def checkPid():
     if globals().has_key('pidfile'):
-    	if os.path.exists(pidfile):
-     		print "Error: client already running or dies unexpectly (pid file exists) !" 
-     		sys.exit(4)
-    	FILE = open(pidfile,"w")   
-    	FILE.write(str(os.getpid()))
-    	FILE.close()
+        if os.path.exists(pidfile):
+             print "Error: client already running or dies unexpectly (pid file exists) !" 
+             sys.exit(4)
+        FILE = open(pidfile,"w")   
+        FILE.write(str(os.getpid()))
+        FILE.close()
 
 def exitClient():
     if globals().has_key('pidfile'):
-    	os.remove(pidfile)
+        os.remove(pidfile)
     sys.exit(1)
    
 def cleanupList(f):
@@ -217,24 +230,17 @@ def set_release():
 def send_updates(): 
     check_validity(uuid)
     # search for local updates
-    my = yum.YumBase()
-    my.doRepoSetup()
-    my.doSackSetup()
-    my.doTsSetup()
-    my.doRpmDBSetup()
+    my = myBackend.backend()
     packages_to_update=[]
     packages_skipped=[]
-    for children in my.up.getUpdatesList():
-        matches=my.pkgSack.searchNevra(name=children[0], arch=children[1], epoch=children[2],
-                                       ver=children[3], rel=children[4])
-        packages_to_update.append("%s,%s,%s,%s,%s" % (children[0],children[1],children[3],children[4],matches[0].repo))
+    packages_to_update = my.getUpdatesList()
     json_value = json.dumps(packages_to_update)
     xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value})
     print "to update : " +str(xml)
     for children in json.loads(xml):
           #print "do this : yum update "+children
           myPckList=children.split(',')
-          mylist = my.pkgSack.searchNevra(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
+          mylist = my.search(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
           if not mylist:
               print "skipping %s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3])
               packages_skipped.append("%s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3]))
@@ -245,7 +251,7 @@ def send_updates():
     print "to install : " +str(xml)
     for children in json.loads(xml):
           myPckList=children.split(',')
-          mylist = my.pkgSack.searchNevra(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
+          mylist = my.search(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
           if not mylist:
               print "skipping %s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3])
               packages_skipped.append("%s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3]))
@@ -255,18 +261,18 @@ def send_updates():
     my.buildTransaction()
     saveout = sys.stdout
     sys.stdout = StringIO()
-    try:
-        my.processTransaction()
-    except: 
-        sys.stdout = saveout
-        print "Error: unexpected error during transaction !" 
-        exitClient()
+#    try:
+    my.processTransaction()
+#    except: 
+#        sys.stdout = saveout
+#        print "Error: unexpected error during transaction !" 
+    exitClient()
     sys.stdout = saveout
     #TODO retrieve the installed packages and notify the database
     #for children in my.ts.ts.getKeys():
     #  print children
-    myValues =  my.ts.ts.getKeys()
-    if myValues == None:
+    packages_updated = my.getKeys()
+    if packages_updated == None:
        print "nothing set to update"
        if packages_skipped:
           json_value = json.dumps("")
@@ -274,10 +280,6 @@ def send_updates():
           xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
           print xml
     else:
-      packages_updated=[]
-      for (hdr, path) in cleanupList(myValues):
-        print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
-        packages_updated.append("%s,%s,%s,%s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release']))
       json_value = json.dumps(packages_updated)
       json_value_skip = json.dumps(packages_skipped)
       xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
@@ -286,21 +288,21 @@ def send_updates():
           status,output = commands.getstatusoutput(postscript) 
           
 def send_list(): 
+    """
+    Send list of all available packages in the repositories
+    """
     global login
     global passwd
     check_validity(uuid)
-    my = yum.YumBase()
+    my = myBackend.backend()
     packages_to_add=[]
-    packages_skipped=[]
     print "You need an admin login to perform this operation."
     if not login:
         login=raw_input("Login : ")
     if not passwd:
         passwd=getpass.getpass()
     
-    ygh = my.doPackageLists()
-    for children in ygh.available:
-        packages_to_add.append("%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo))
+    packages_to_add = my.packageLists()
     json_value = json.dumps(packages_to_add)
     xml = request({'method': "call_send_list", 'login': login, 
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
