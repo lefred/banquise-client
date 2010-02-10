@@ -31,7 +31,19 @@ class backend:
             packages_to_update.append("%s,%s,%s,%s,%s" % (children[0],children[1],children[3],children[4],matches[0].repo))
         
         return packages_to_update
-    
+
+    def getInstalledList(self):
+        packages_installed = []
+        
+        self.backend.doRepoSetup()
+        self.backend.doSackSetup()
+        self.backend.doTsSetup()
+        self.backend.doRpmDBSetup()   
+   
+        for children in self.backend.doPackageLists("installed").installed:
+            packages_installed.append("%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo))
+        return packages_installed
+
     
     def install(self, po):
         self.backend.install(po)
