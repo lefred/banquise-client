@@ -59,7 +59,6 @@ class backend:
     def processTransaction(self):
         """Run transaction"""
         self.ctrl.commitTransaction(self.trans, confirm=False)
-        self.ctrl.commitTransaction(self.trans, confirm=False)
         
     
     def search(self, name=None, epoch=None, ver=None, rel=None, arch=None):
@@ -93,7 +92,6 @@ class backend:
                         if isinstance(obj, Package):
                             pkginfo = self.formatPackage(obj).split(',')
                 packages_updated.append("%s,%s,%s,%s" % (pkginfo[0], pkginfo[1], pkginfo[2], pkginfo[3]))
-                print packages_updated
         
             return packages_updated
                   

@@ -258,15 +258,16 @@ def send_updates():
           else:
              for po in mylist:
                 my.install(po)
+    
     my.buildTransaction()
     saveout = sys.stdout
     sys.stdout = StringIO()
-#    try:
-    my.processTransaction()
-#    except: 
-#        sys.stdout = saveout
-#        print "Error: unexpected error during transaction !" 
-    exitClient()
+    try:
+        my.processTransaction()
+    except: 
+        sys.stdout = saveout
+        print "Error: unexpected error during transaction !" 
+        exitClient()
     sys.stdout = saveout
     #TODO retrieve the installed packages and notify the database
     #for children in my.ts.ts.getKeys():
