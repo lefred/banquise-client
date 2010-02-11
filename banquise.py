@@ -32,6 +32,7 @@ import struct
 import getpass
 import commands
 
+sys.path.append("/usr/share/banquise")
 
 global uuid
 global server_url

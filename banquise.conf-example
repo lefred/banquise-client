@@ -1,4 +1,9 @@
 [DEFAULT]
-server_url= http://127.0.0.1:8000/web/json
-type= REST
-pid= /var/run/banquise.pid
+server_url = http://127.0.0.1/web/json
+type = REST
+pid = /var/run/banquise.pid
+backend = yum
+#postscript = "puppetd --test"
+# for administration only (list command) - this is an option
+#login =
+#passwd =
