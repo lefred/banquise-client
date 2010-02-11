@@ -12,10 +12,7 @@ class backend:
         initPsyco()
         self.ctrl.reloadChannels()
         self.cache = self.ctrl.getCache()
-        self.itrans = Transaction(self.cache, PolicyInstall)
-        self.utrans = Transaction(self.cache, PolicyUpgrade)
-        self.iaction = False
-        self.uaction = False
+        self.trans = Transaction(self.cache, PolicyInstall)
         
     
     def packageLists(self):
@@ -46,30 +43,22 @@ class backend:
     
     def install(self, pkg):
         """Install a package."""
-        print "install"
-        self.itrans.enqueue(pkg, INSTALL)
-        self.iaction = True
+        self.trans.enqueue(pkg, INSTALL)
         
         
     def update(self, pkg):
         """Update a package."""
-        self.utrans.enqueue(pkg, UPGRADE)
-        self.uaction = True
+        self.trans.enqueue(pkg, INSTALL)
         
     
     def buildTransaction(self):
         """Build transaction"""
-        if (self.uaction):
-            self.utrans.run()
-        if (self.iaction):
-            self.itrans.run()
+        self.trans.run()
                 
     
     def processTransaction(self):
         """Run transaction"""
-        print "processTransaction"
-        self.ctrl.commitTransaction(self.utrans, confirm=False)
-        self.ctrl.commitTransaction(self.itrans, confirm=False)
+        self.ctrl.commitTransaction(self.trans, confirm=False)
         
     
     def search(self, name=None, epoch=None, ver=None, rel=None, arch=None):
@@ -90,14 +79,20 @@ class backend:
     
     def getKeys(self):
         """List updated/installed packages to send back to the server."""
-        if (self.update.numTaskCompleted == 0) and (self.install.numTaskCompleted == 0):
+        if (self.trans.numTaskCompleted == 0):
             return None
         else:
-            packages_updated = []          
-            for pkg in self.update.getPersistentState:
-                print "keys: " + pkg
-                info = self.formatPackage(pkg).split(',')
-                packages_updated.append("%s,%s,%s,%s" % (info[0], info[1], info[2], info[3]))
+            packages_updated = []
+            for pkg in self.trans.getChangeSet().getPersistentState():
+                ratio, results, suggestions = self.ctrl.search(pkg[1] + "-" + pkg[2], addprovides=False)
+                if not results:
+                    return False
+                else:
+                    for obj in results:
+                        if isinstance(obj, Package):
+                            pkginfo = self.formatPackage(obj).split(',')
+                packages_updated.append("%s,%s,%s,%s" % (pkginfo[0], pkginfo[1], pkginfo[2], pkginfo[3]))
+        
             return packages_updated
                   
     
