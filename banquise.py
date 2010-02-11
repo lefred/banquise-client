@@ -160,6 +160,7 @@ def request(args):
       "call_setup": "/setup/",
       "call_test" : "/test/",
       "call_send_update" : "/update/",
+      "call_send_sync" : "/sync/",
       "set_release": "/set_release/",
       "call_packs_done": "/packdone/",
       "call_send_list" : "/addpack/",
@@ -237,7 +238,15 @@ def set_release():
     else:
         print "ERROR: unexpected error!"
         exitClient()
-        
+
+def send_sync():
+    check_validity(uuid)
+    my = myBackend.backend()
+    installed_packages = my.getInstalledList()
+    json_value = json.dumps(installed_packages)
+    xml = request({'method': "call_send_sync", 'uuid': uuid, 'packages': json_value})
+    print " : " +str(xml)
+            
 def send_updates(): 
     check_validity(uuid)
     # search for local updates
@@ -339,6 +348,8 @@ else:
         set_release()
      elif sys.argv[1] == 'update':
         send_updates()
+     elif sys.argv[1] == 'sync':
+        send_sync()
      elif sys.argv[1] == 'list':
         send_list()
      elif sys.argv[1] == 'version':
