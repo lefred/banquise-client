@@ -39,6 +39,17 @@ class backend:
             packages_to_update.append(self.formatPackage(pkg))
         
         return packages_to_update
+
+
+    def getInstalledList(self):
+        """Get a list of all installed packages."""
+        packages_installed = []
+        
+        for pkg in self.cache.getPackages():
+            if pkg.installed:
+                packages_installed.append(self.formatPackage(pkg))
+            
+        return packages_installed
     
     
     def install(self, pkg):
