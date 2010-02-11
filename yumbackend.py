@@ -80,7 +80,7 @@ class backend:
     def setProxy(self, proxy):
         """Set proxy"""
         
-        if (proxy.find('@')):
+        if (proxy.find('@') != -1):
             """Username and password are in the proxy url"""
             protocol = proxy[:proxy.find('://')]
             name = proxy[proxy.find('@') + 1:]
@@ -88,7 +88,10 @@ class backend:
             creds = proxy[proxy.find('://') + 1:proxy.find('@')].split(':')
             username = creds[0]
             password = creds[1]
-            # Set proxy, proxy_user and proxy_password
-        else:
-            # Set proxy
+                   
+            self.backend.conf.proxy = url
+            self.backend.conf.proxy_password = password
+            self.backend.conf.proxy_username = username
             
+        else:
+            self.backend.conf.proxy = proxy
