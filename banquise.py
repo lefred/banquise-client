@@ -245,7 +245,7 @@ def send_sync():
     installed_packages = my.getInstalledList()
     json_value = json.dumps(installed_packages)
     xml = request({'method': "call_send_sync", 'uuid': uuid, 'packages': json_value})
-    print " : " +str(xml)
+    print str(xml)
             
 def send_updates(): 
     check_validity(uuid)
