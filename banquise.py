@@ -132,12 +132,6 @@ def exitClient():
         os.remove(pidfile)
     sys.exit(1)
    
-def cleanupList(f):
-    if f:
-     return [i for i in list(f) if i] 
-    else:
-     return []
-
 def readConfig():
     config = ConfigParser()
     if not os.path.exists(r'/etc/banquise.conf'):

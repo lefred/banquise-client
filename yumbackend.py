@@ -75,8 +75,13 @@ class backend:
                 print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
                 packages_updated.append("%s,%s,%s,%s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release']))
             return packages_updated
-    
-    
+   
+    def cleanupList(f):
+        if f:
+            return [i for i in list(f) if i]
+        else:
+            return []
+ 
     def setProxy(self, proxy):
         """Set proxy"""
         
