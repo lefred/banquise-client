@@ -63,3 +63,20 @@ class backend:
                 print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
                 packages_updated.append("%s,%s,%s,%s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release']))
             return packages_updated
+    
+    
+    def setProxy(self, proxy):
+        """Set proxy"""
+        
+        if (proxy.find('@')):
+            """Username and password are in the proxy url"""
+            protocol = proxy[:proxy.find('://')]
+            name = proxy[proxy.find('@') + 1:]
+            url = protocol + '://' + name
+            creds = proxy[proxy.find('://') + 1:proxy.find('@')].split(':')
+            username = creds[0]
+            password = creds[1]
+            # Set proxy, proxy_user and proxy_password
+        else:
+            # Set proxy
+            

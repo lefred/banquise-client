@@ -54,6 +54,7 @@ def parseConfig():
     global postscript
     global backend
     global myBackend
+    global proxy
 
     if not os.path.exists(r'/etc/banquise.conf'):
       print "Error: client configuration file missing !" 
@@ -101,6 +102,10 @@ def parseConfig():
         postscript=config.defaults()['postscript']
     except:
         postscript=""
+    try:
+        proxy = config.defaults()['proxy']
+    except:
+        proxy = ""
     #check uuid
     uuid=getuuid(config)
     return True
@@ -145,6 +150,12 @@ def readConfig():
 def request(args):
     global server_url
     params = urllib.urlencode(args)
+    
+    if (proxy != ""):
+        proxies = {proxy[:proxy.find('://')]: proxy}
+    else:
+        proxies = None
+        
     METHOD = {
       "call_setup": "/setup/",
       "call_test" : "/test/",
@@ -154,7 +165,7 @@ def request(args):
       "call_send_list" : "/addpack/",
       "call_send_install" : "/install/",
     }
-    return urllib.urlopen(server_url+METHOD.get(args.get('method')),params).read()
+    return urllib.urlopen(server_url+METHOD.get(args.get('method')), params, proxies).read()
 
 def call_test(uuid):
     if check_validity(uuid):
@@ -231,6 +242,8 @@ def send_updates():
     check_validity(uuid)
     # search for local updates
     my = myBackend.backend()
+    if (proxy != ""):
+        my.setProxy(proxy)
     packages_to_update=[]
     packages_skipped=[]
     packages_to_update = my.getUpdatesList()

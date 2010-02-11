@@ -110,3 +110,8 @@ class backend:
         channels.sort()
         
         return "%s,%s,%s,%s,%s" % (pkg.name, arch, version, release, channels[0])
+    
+    
+    def setProxy(self, proxy):
+        """Set proxy"""
+        sysconf.set("http-proxy", proxy)
