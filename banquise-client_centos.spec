@@ -1,6 +1,6 @@
 Name:		banquise-client
-Version:	0.4
-Release:	2%{?dist}
+Version:	0.5
+Release:	1%{?dist}
 License:	GPLv3
 Group:		System
 Summary:	Client of banquise package system
@@ -10,7 +10,7 @@ Source0:	%{name}-%{version}.tgz
 Patch0:		%{name}-centos.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:	noarch
-Requires:	python, yum, python-hashlib   
+Requires:	python, yum, python-hashlib, banquise-client-backend   
 
 %description
 Client part of the banquise project
@@ -36,6 +36,8 @@ cp banquise.conf-example $RPM_BUILD_ROOT%{_sysconfdir}/banquise.conf
 %config(noreplace) %{_sysconfdir}/banquise.conf
 
 %changelog
+* Thu Feb 11 2010 - Frederic Descamps <lefred@inuits.be> 0.5-1
+- version 0.5-1 first test release of 0.5
 * Tue Jan 12 2010 - Frederic Descamps <lefred@inuits.be> 0.4-2 
 - version 0.4 of the client but to run on centos
 * Mon Jan 11 2010 - Frederic Descamps <lefred@inuits.be> 0.4-1 

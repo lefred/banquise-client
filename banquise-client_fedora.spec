@@ -32,7 +32,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/*
-%{_sysconfdir}/*
+%config(noreplace) %{_sysconfdir}/banquise.conf
 
 %changelog
 * Thu Feb 11 2010 - Frederic Descamps <lefred@inuits.be> 0.5-1 
