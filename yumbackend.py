@@ -24,11 +24,23 @@ class backend:
         self.backend.doSackSetup()
         self.backend.doTsSetup()
         self.backend.doRpmDBSetup()   
-    
+        old_repo=""
         for children in self.backend.up.getUpdatesList():
             matches = self.search(name=children[0], arch=children[1], epoch=children[2],
                                            ver=children[3], rel=children[4])
-            packages_to_update.append("%s,%s,%s,%s,%s" % (children[0],children[1],children[3],children[4],matches[0].repo))
+            
+            if old_repo != str(matches[0].repo):
+                old_repo=str(matches[0].repo)
+                info = yum.update_md.UpdateMetadata((matches[0].repo,))
+            tup_pack=(children[0],children[3],children[4])
+            notice=info.get_notice(tup_pack)
+            if notice:
+                notice_type=notice.__getitem__('type')
+                notice_update_id=notice.__getitem__('update_id')
+            else:
+                notice_type="normal"
+                notice_update_id="none"
+            packages_to_update.append("%s,%s,%s,%s,%s,%s,%s" % (children[0],children[1],children[3],children[4],matches[0].repo,notice_type,notice_update_id))
         
         return packages_to_update
 
@@ -65,22 +77,23 @@ class backend:
         return self.backend.pkgSack.searchNevra(name, epoch, ver, rel, arch)
     
     
+    def cleanupList(self,f):
+        if f:
+            return [i for i in list(f) if i]
+        else:
+            return []
+        
     def getKeys(self):
         myValues = self.backend.ts.ts.getKeys()
         if myValues == None:
             return None
         else:  
             packages_updated = []
-            for (hdr, path) in cleanupList(myValues):
+            for (hdr, path) in self.cleanupList(myValues):
                 print "%s - %s - %s - %s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release'])
                 packages_updated.append("%s,%s,%s,%s" % (hdr['name'], hdr['arch'],hdr['version'], hdr['release']))
             return packages_updated
    
-    def cleanupList(f):
-        if f:
-            return [i for i in list(f) if i]
-        else:
-            return []
  
     def setProxy(self, proxy):
         """Set proxy"""

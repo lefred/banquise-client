@@ -241,7 +241,7 @@ def send_sync():
     json_value = json.dumps(installed_packages)
     xml = request({'method': "call_send_sync", 'uuid': uuid, 'packages': json_value})
     print str(xml)
-            
+           
 def send_updates(): 
     check_validity(uuid)
     # search for local updates
