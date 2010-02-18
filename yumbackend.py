@@ -10,9 +10,21 @@ class backend:
         packages_to_add = []
         
         ygh = self.backend.doPackageLists()
+        old_repo=""
     
         for children in ygh.available:
-            packages_to_add.append("%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo))
+            if old_repo != str(children.repo):
+                old_repo=str(children.repo)
+                info = yum.update_md.UpdateMetadata((children.repo,))
+            tup_pack=(children.pkgtup[0],children.pkgtup[3],children.pkgtup[4])
+            notice=info.get_notice(tup_pack)
+            if notice:
+                notice_type=notice.__getitem__('type')
+                notice_update_id=notice.__getitem__('update_id')
+            else:
+                notice_type="normal"
+                notice_update_id="none"
+            packages_to_add.append("%s,%s,%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo,notice_type,notice_update_id))
     
         return packages_to_add
     
@@ -51,9 +63,23 @@ class backend:
         self.backend.doSackSetup()
         self.backend.doTsSetup()
         self.backend.doRpmDBSetup()   
+        
+        old_repo=""
    
         for children in self.backend.doPackageLists("installed").installed:
-            packages_installed.append("%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo))
+            if old_repo != str(children.repo):
+                old_repo=str(children.repo)
+                info = yum.update_md.UpdateMetadata((children.repo,))
+            tup_pack=(children.pkgtup[0],children.pkgtup[3],children.pkgtup[4])
+            notice=info.get_notice(tup_pack)
+            if notice:
+                notice_type=notice.__getitem__('type')
+                notice_update_id=notice.__getitem__('update_id')
+            else:
+                notice_type="normal"
+                notice_update_id="none"
+   
+            packages_installed.append("%s,%s,%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo,notice_type,notice_update_id))
         return packages_installed
 
     
