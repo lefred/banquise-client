@@ -20,7 +20,7 @@ Client part of the banquise project
 
 %install
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/etc/cron.daily
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/etc/cron.daily/
 mkdir -p $RPM_BUILD_ROOT%{_bindir}/
 cp %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/etc/cron.daily
 cp banquise.py $RPM_BUILD_ROOT%{_bindir}/banquise
