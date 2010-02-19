@@ -31,6 +31,7 @@ import fcntl
 import struct
 import getpass
 import commands
+import re
 
 sys.path.append("/usr/share/banquise")
 
@@ -320,11 +321,18 @@ def send_list():
     if not passwd:
         passwd=getpass.getpass()
     
-    packages_to_add = my.packageLists()
     json_value = json.dumps(packages_to_add)
     xml = request({'method': "call_send_list", 'login': login, 
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
-    print xml
+    if re.search('incorrect',xml):
+        print xml
+    else:
+        print "Warning: this operation can be very long ! (+/- 1h)"
+        packages_to_add = my.packageLists()
+        json_value = json.dumps(packages_to_add)
+        xml = request({'method': "call_send_list", 'login': login, 
+                   'passwd': passwd, 'uuid': uuid, 'packages': json_value})
+        print xml
 
 #if __main__ == 
 # Main program
