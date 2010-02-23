@@ -1,6 +1,6 @@
 Name:		banquise-client
 Version:	0.5
-Release:	4%{?dist}
+Release:	5%{?dist}
 License:	GPLv3
 Group:		System
 Summary:	Client of banquise package system
@@ -37,6 +37,8 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %{_sysconfdir}/banquise.conf
 
 %changelog
+* Tue Feb 23 2010 - Frederic Descamps <lefred@inuits.be> 0.5-5
+- version 0.5-5 metabug info added and memory usage optimized
 * Thu Feb 18 2010 - Frederic Descamps <lefred@inuits.be> 0.5-4
 - version 0.5-4 adding a cronjob, adding metadata and sync release number with
   server

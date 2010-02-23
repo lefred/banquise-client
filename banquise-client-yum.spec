@@ -1,6 +1,6 @@
 Name:		banquise-client-yum
 Version:	0.5
-Release:	4%{?dist}
+Release:	5%{?dist}
 License:	GPLv3
 Group:		System
 Summary:	Client yum backend of banquise package system
@@ -31,6 +31,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/banquise/*
 
 %changelog
+* Tue Feb 23 2010 - Frederic Descamps <lefred@inuits.be> 0.5-5
+- version 0.5-5 metabug info added and memory usage optimized
 * Thu Feb 18 2010 - Frederic Descamps <lefred@inuits.be> 0.5-4
 - version 0.5-4 adding metadata and sync release number with server
 * Thu Feb 11 2010 - Frederic Descamps <lefred@inuits.be> 0.5-1 
