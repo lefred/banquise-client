@@ -11,19 +11,11 @@ class backend:
         
         ygh = self.backend.doPackageLists()
         old_repo=""
-    
         for children in ygh.available:
             if old_repo != str(children.repo):
                 old_repo=str(children.repo)
                 info = yum.update_md.UpdateMetadata((children.repo,))
-            tup_pack=(children.pkgtup[0],children.pkgtup[3],children.pkgtup[4])
-            notice=info.get_notice(tup_pack)
-            if notice:
-                notice_type=notice.__getitem__('type')
-                notice_update_id=notice.__getitem__('update_id')
-            else:
-                notice_type="normal"
-                notice_update_id="none"
+            notice_update_id,notice_type,tup_update_id,tup_bug=self.getNotice(children.pkgtup[0],children.pkgtup[3],children.pkgtup[4],info) 
             packages_to_add.append("%s,%s,%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo,notice_type,notice_update_id))
     
         return packages_to_add
@@ -31,6 +23,9 @@ class backend:
     
     def getUpdatesList(self):
         packages_to_update = []
+        metainfo_to_update = []
+        metabug_to_update = []
+        tup_update_id={}
         
         self.backend.doRepoSetup()
         self.backend.doSackSetup()
@@ -45,19 +40,17 @@ class backend:
                 old_repo=str(matches[0].repo)
                 info = yum.update_md.UpdateMetadata((matches[0].repo,))
             tup_pack=(children[0],children[3],children[4])
-            notice=info.get_notice(tup_pack)
-            if notice:
-                notice_type=notice.__getitem__('type')
-                notice_update_id=notice.__getitem__('update_id')
-            else:
-                notice_type="normal"
-                notice_update_id="none"
+            notice_update_id,notice_type,tup_update_id,tup_bug=self.getNotice(children[0],children[3],children[4],info) 
+            metainfo_to_update.append(tup_update_id)
+            metabug_to_update.append(tup_bug)
             packages_to_update.append("%s,%s,%s,%s,%s,%s,%s" % (children[0],children[1],children[3],children[4],matches[0].repo,notice_type,notice_update_id))
         
-        return packages_to_update
+        return packages_to_update,metainfo_to_update,metabug_to_update
 
     def getInstalledList(self):
         packages_installed = []
+        metainfo_to_update = []
+        metabug_to_update = []
         
         self.backend.doRepoSetup()
         self.backend.doSackSetup()
@@ -67,22 +60,34 @@ class backend:
         old_repo=""
    
         for children in self.backend.doPackageLists("installed").installed:
-            if old_repo != str(children.repo):
-                old_repo=str(children.repo)
-                info = yum.update_md.UpdateMetadata((children.repo,))
-            tup_pack=(children.pkgtup[0],children.pkgtup[3],children.pkgtup[4])
-            notice=info.get_notice(tup_pack)
-            if notice:
-                notice_type=notice.__getitem__('type')
-                notice_update_id=notice.__getitem__('update_id')
-            else:
-                notice_type="normal"
-                notice_update_id="none"
-   
-            packages_installed.append("%s,%s,%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo,notice_type,notice_update_id))
+            packages_installed.append("%s,%s,%s,%s,%s" % (children.pkgtup[0],children.pkgtup[1],children.pkgtup[3],children.pkgtup[4],children.repo))
         return packages_installed
-
+     
+    def getInfo(self,old_repo,repo,info=None):
+        self.backend.doRepoSetup()
+        if old_repo != repo:
+            old_repo=repo
+            repository=self.backend.repos.getRepo(repo)
+            dir(repository)
+            info = yum.update_md.UpdateMetadata((repository,))
+        return info,old_repo
     
+    def getNotice(self,package_name,package_version,package_release,info):
+        tup_pack=(package_name,package_version,package_release)
+        notice=info.get_notice(tup_pack)
+        tup_update_id={}
+        tup_bug=None
+        if notice:
+            notice_type=notice.__getitem__('type')
+            notice_update_id=notice.__getitem__('update_id')
+            # TODO multiple bugs to add here
+            tup_update_id[notice_update_id]=(notice.__getitem__('type'),notice.__getitem__('status'),notice.__getitem__('description'))
+            tup_bug=(notice_update_id,notice.__getitem__('references'))
+        else:
+            notice_type="normal"
+            notice_update_id="none"    
+        return notice_update_id,notice_type,tup_update_id,tup_bug
+      
     def install(self, po):
         self.backend.install(po)
         

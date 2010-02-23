@@ -161,6 +161,8 @@ def request(args):
       "call_packs_done": "/packdone/",
       "call_send_list" : "/addpack/",
       "call_send_install" : "/install/",
+      "call_send_metainfo" : "/metainfo/",
+      "call_send_metabug" : "/metabug/",
     }
     return urllib.urlopen(server_url+METHOD.get(args.get('method')), params, proxies).read()
 
@@ -250,10 +252,13 @@ def send_updates():
     if (proxy != ""):
         my.setProxy(proxy)
     packages_to_update=[]
+    metainfo_to_update=[]
     packages_skipped=[]
-    packages_to_update = my.getUpdatesList()
+    packages_to_update,metainfo_to_update,metabug_to_update = my.getUpdatesList()
     json_value = json.dumps(packages_to_update)
-    xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value})
+    json_value2 = json.dumps(metainfo_to_update)
+    json_value3 = json.dumps(metabug_to_update)
+    xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value, 'metainfo':json_value2, 'metabug':json_value3})
     print "to update : " +str(xml)
     for children in json.loads(xml):
           #print "do this : yum update "+children
@@ -320,7 +325,6 @@ def send_list():
         login=raw_input("Login : ")
     if not passwd:
         passwd=getpass.getpass()
-    
     json_value = json.dumps(packages_to_add)
     xml = request({'method': "call_send_list", 'login': login, 
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
@@ -330,6 +334,19 @@ def send_list():
         print "Warning: this operation can be very long ! (+/- 1h)"
         packages_to_add = my.packageLists()
         json_value = json.dumps(packages_to_add)
+        old_repo=""
+        info=None
+        for pack in packages_to_add:
+            myPckList=pack.split(',')
+            info, old_repo= my.getInfo(old_repo,myPckList[4],info)
+            notice_update_id,notice_type,tup_update_id,tup_bug=my.getNotice(myPckList[0],myPckList[2],myPckList[3],info)
+            
+            # send here the data per package 
+            # TODO
+            json_value2 = json.dumps(tup_update_id)
+            xml = request({'method': "call_send_metainfo", 'metainfo': json_value2})
+            json_value3 = json.dumps(tup_bug)
+            xml = request({'method': "call_send_metabug", 'metabug': json_value3})
         xml = request({'method': "call_send_list", 'login': login, 
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
         print xml
