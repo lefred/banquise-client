@@ -20,11 +20,17 @@ class backend:
     
         return packages_to_add
     
-    
+    def getChangeLog(self,name,arch,ver,rel):
+        matches = self.search(name=name, arch=arch,
+                              ver=ver, rel=rel)
+        return matches[0].returnChangelog()
+        
+         
     def getUpdatesList(self):
         packages_to_update = []
         metainfo_to_update = []
         metabug_to_update = []
+        changelog_to_update = []
         tup_update_id={}
         
         self.backend.doRepoSetup()

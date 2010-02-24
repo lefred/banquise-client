@@ -156,6 +156,8 @@ def request(args):
       "call_setup": "/setup/",
       "call_test" : "/test/",
       "call_send_update" : "/update/",
+      "call_send_changelog" : "/changelog/",
+      "call_send_ask_update" : "/askupdate/",
       "call_send_sync" : "/sync/",
       "set_release": "/set_release/",
       "call_packs_done": "/packdone/",
@@ -255,10 +257,20 @@ def send_updates():
     metainfo_to_update=[]
     packages_skipped=[]
     packages_to_update,metainfo_to_update,metabug_to_update = my.getUpdatesList()
-    json_value = json.dumps(packages_to_update)
-    json_value2 = json.dumps(metainfo_to_update)
-    json_value3 = json.dumps(metabug_to_update)
-    xml = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value, 'metainfo':json_value2, 'metabug':json_value3})
+    for metainfo in metainfo_to_update:
+        json_value2 = json.dumps(metainfo)
+        xml = request({'method': "call_send_metainfo", 'metainfo': json_value2})
+    for metabug in metabug_to_update:
+        json_value3 = json.dumps(metabug)
+        xml = request({'method': "call_send_metabug", 'metabug': json_value3})
+    for children in packages_to_update:
+        tab = children.split(",")
+        changelog=my.getChangeLog(tab[0],tab[1],tab[2],tab[3]) 
+        json_value = json.dumps(children)
+        pack_id = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value})
+        json_value = json.dumps(changelog)
+        xml = request({'method': "call_send_changelog", 'pack_id': pack_id, 'changelog': json_value})
+    xml = request({'method': "call_send_ask_update", 'uuid': uuid})
     print "to update : " +str(xml)
     for children in json.loads(xml):
           #print "do this : yum update "+children
