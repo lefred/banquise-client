@@ -28,6 +28,8 @@ class backend:
     def getUpdatesList(self):
         """Get a list of all packages with a pending update."""
         packages_to_update = []
+        metainfo_to_update = []
+        metabug_to_update = []
         
         trans = Transaction(self.cache, PolicyUpgrade)
         
@@ -38,7 +40,7 @@ class backend:
         for pkg in trans._queue:   
             packages_to_update.append(self.formatPackage(pkg))
         
-        return packages_to_update
+        return packages_to_update,metainfo_to_update,metabug_to_update
 
 
     def getInstalledList(self):
@@ -109,6 +111,7 @@ class backend:
     
     def formatPackage(self, pkg):
         """Helper function to correctly format package info"""
+        seen = {}
         info = pkg.version
             
         arch = info[info.find('@') + 1:]
@@ -118,9 +121,14 @@ class backend:
         channels = []
         for loader in pkg.loaders:
             channels.append(loader.getChannel().getAlias())
+            if loader not in seen:
+                    seen[loader] = True
+                    errata = loader.getErrata(pkg)
+                    if errata:
+                        print "   ", _("Type:"), errata.getType()
         channels.sort()
         
-        return "%s,%s,%s,%s,%s" % (pkg.name, arch, version, release, channels[0])
+        return "%s,%s,%s,%s,%s,%s,%s" % (pkg.name, arch, version, release, channels[0], '', '')
     
     
     def setProxy(self, proxy):
