@@ -25,6 +25,12 @@ class backend:
         return packages_to_add
     
     
+    def getChangeLog(self,name,arch,ver,rel):
+        matches = self.search(name=name, arch=arch,
+                              ver=ver, rel=rel)
+        return []
+    
+    
     def getUpdatesList(self):
         """Get a list of all packages with a pending update."""
         packages_to_update = []
