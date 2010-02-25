@@ -219,13 +219,13 @@ def call_setup():
      config.write(configfile)
 
 def get_release():
-    # TODO : use lsb_release
-    fobj = open("/etc/redhat-release",'r')
-    try:
-      release = fobj.readline()[:-1]
-    finally:
-      fobj.close
-    return release
+    try: 
+        description=commands.getoutput("lsb_release -ds")
+        #remove the double-quotes in redhat - TODO
+    except:
+        description="not found"
+        
+    return description
 
 def set_release():
     global uuid
