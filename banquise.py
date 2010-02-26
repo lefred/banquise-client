@@ -221,6 +221,7 @@ def call_setup():
 def get_release():
     try: 
         description=commands.getoutput("lsb_release -ds")
+ 	description=description.replace('"',"")
         #remove the double-quotes in redhat - TODO
     except:
         description="not found"
