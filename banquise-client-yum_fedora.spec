@@ -9,7 +9,7 @@ Packager:	Frederic Descamps
 Source0:	%{name}-%{version}.tgz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:	noarch
-Requires:	python, yum, banquise-client
+Requires:	python, yum, banquise-client, yum-plugin-security
 Provides:	banquise-client-backend   
 
 %description

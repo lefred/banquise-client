@@ -4,6 +4,11 @@ class backend:
     
     def __init__(self):
         self.backend = yum.YumBase()
+        try:
+            info = yum.update_md.UpdateMetadata('base',)
+        except:
+            print "Error: yum security plugin is not installed or not loaded !"
+            sys.exit(1)
         
     
     def packageLists(self):
@@ -45,6 +50,7 @@ class backend:
             if old_repo != str(matches[0].repo):
                 old_repo=str(matches[0].repo)
                 info = yum.update_md.UpdateMetadata((matches[0].repo,))
+		
             tup_pack=(children[0],children[3],children[4])
             notice_update_id,notice_type,tup_update_id,tup_bug=self.getNotice(children[0],children[3],children[4],info) 
             metainfo_to_update.append(tup_update_id)
@@ -74,7 +80,6 @@ class backend:
         if old_repo != repo:
             old_repo=repo
             repository=self.backend.repos.getRepo(repo)
-            dir(repository)
             info = yum.update_md.UpdateMetadata((repository,))
         return info,old_repo
     
