@@ -387,6 +387,16 @@ else:
         send_list()
      elif sys.argv[1] == 'version':
         print showVersion()
+     elif sys.argv[1] == 'help':
+         print "banquise <command>"
+         print "    where command is :"
+         print "        - setup : configure the client with the license"
+         print "        - test : test communication with the server"
+         print "        - setrel : push the release of the distribution to the server"
+         print "        - update : update the packages and send the new available packages to update"
+         print "        - sync : sync the package to the server db (new, deleted, sync)"
+         print "        - list : send all the package from the repo to the server's db (very intensive + admin user needed)"
+         print "        - version : display the version"
      else:
         print "Error: %s command not found !" % (sys.argv[1])
 exitClient()
