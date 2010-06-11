@@ -173,9 +173,12 @@ def call_test(uuid):
           print "Communication with server ok"
 
 def check_validity(uuid):
-    xml = request({'method': "call_test", 'uuid': uuid})
+    version=showVersion()
+    xml = request({'method': "call_test", 'uuid': uuid, 'version': version})
     if xml == "OK":
         return True
+    elif xml == "VERSION":
+        print "Client version not supported"
     elif xml == "ERROR2":
         print "ERROR: contract is expired for this host !"
     elif xml == "ERROR3":
