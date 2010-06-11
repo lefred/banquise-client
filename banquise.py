@@ -209,7 +209,11 @@ def call_setup():
     print "You need a valid license key." 
     license=raw_input("license key : ")
     release=get_release()
-    xml = request({'method': "call_setup", 'license': license, 'hostname': hostname, 'release': release, 'priv_ip': priv_ip})
+    try:
+        xml = request({'method': "call_setup", 'license': license, 'hostname': hostname, 'release': release, 'priv_ip': priv_ip})
+    except:
+        print "ERROR: network problem or wrong url in banquise.conf !"
+        exitClient()
     if xml == "ERROR0":
         print "ERROR: the entered license key is not valid !"
         exitClient()
