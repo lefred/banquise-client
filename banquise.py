@@ -222,11 +222,10 @@ def call_setup():
      config.write(configfile)
 
 def get_release():
-    try: 
-        description=commands.getoutput("lsb_release -ds")
- 	description=description.replace('"',"")
-        #remove the double-quotes in redhat - TODO
-    except:
+    if os.path.exists('/usr/bin/lsb_release'):
+        description=commands.getoutput("/usr/bin/lsb_release -ds")
+        description=description.replace('"',"")
+    else:
         description="not found"
         
     return description
