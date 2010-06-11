@@ -210,11 +210,14 @@ def call_setup():
     license=raw_input("license key : ")
     release=get_release()
     xml = request({'method': "call_setup", 'license': license, 'hostname': hostname, 'release': release, 'priv_ip': priv_ip})
+    if xml == "ERROR0":
+        print "ERROR: the entered license key is not valid !"
+        exitClient()
     if xml == "ERROR1":
         print "ERROR: this host (or another with the same name) is already linked to a valid contract!"
         exitClient()
     print xml
-    config.set("DEFAULT","uuid",xml)
+    #config.set("DEFAULT","uuid",xml)
     with open("/etc/banquise.conf","wb") as configfile:    
      config.write(configfile)
 
