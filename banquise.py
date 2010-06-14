@@ -59,37 +59,37 @@ def parseConfig():
     global proxy
 
     if not os.path.exists(r'/etc/banquise.conf'):
-      print "Error: client configuration file missing !" 
+      print "Error: client configuration file missing !"
       exitClient()
     config=readConfig()
     #check server url
-    if not config.defaults()['server_url']: 
-     print "Error: client configuration, server_url is not set !" 
+    if not config.defaults()['server_url']:
+     print "Error: client configuration, server_url is not set !"
      exitClient()
     server_url=config.defaults()['server_url']
     #check client type
-    if not config.defaults()['type']: 
-     print "Error: client configuration, client type is not set !" 
+    if not config.defaults()['type']:
+     print "Error: client configuration, client type is not set !"
      exitClient()
-    if config.defaults()['type'] != 'REST' and config.defaults()['type'] != 'XMPP': 
-     print "Error: client configuration, client type value is wrong, it should be REST or XMPP !" 
+    if config.defaults()['type'] != 'REST' and config.defaults()['type'] != 'XMPP':
+     print "Error: client configuration, client type value is wrong, it should be REST or XMPP !"
      exitClient()
     type=config.defaults()['type']
-    
+
     #check backend
-    if not config.defaults()['backend']: 
-     print "Error: client configuration, client backend is not set !" 
+    if not config.defaults()['backend']:
+     print "Error: client configuration, client backend is not set !"
      exitClient()
-    if config.defaults()['backend'] != 'yum' and config.defaults()['backend'] != 'smart': 
-     print "Error: client configuration, client backend value is wrong, it should be YUM or SMART !" 
+    if config.defaults()['backend'] != 'yum' and config.defaults()['backend'] != 'smart':
+     print "Error: client configuration, client backend value is wrong, it should be YUM or SMART !"
      exitClient()
     backend=config.defaults()['backend']
-    
+
     myBackend = __import__(backend + "backend")
-    
+
     #check pid file
-    if not config.defaults()['pid']: 
-     print "Error: client configuration, pid setting not defined !" 
+    if not config.defaults()['pid']:
+     print "Error: client configuration, pid setting not defined !"
      exitClient()
     pidfile=config.defaults()['pid']
     try:
@@ -113,19 +113,19 @@ def parseConfig():
     return True
 
 def getuuid(config):
-    try: 
+    try:
       value=config.defaults()['uuid']
     except KeyError:
       value=None
     return value
-  
- 
+
+
 def checkPid():
     if globals().has_key('pidfile'):
         if os.path.exists(pidfile):
-             print "Error: client already running or dies unexpectly (pid file exists) !" 
+             print "Error: client already running or dies unexpectly (pid file exists) !"
              sys.exit(4)
-        FILE = open(pidfile,"w")   
+        FILE = open(pidfile,"w")
         FILE.write(str(os.getpid()))
         FILE.close()
 
@@ -133,7 +133,7 @@ def exitClient():
     if globals().has_key('pidfile'):
         os.remove(pidfile)
     sys.exit(1)
-   
+
 def readConfig():
     config = ConfigParser()
     if not os.path.exists(r'/etc/banquise.conf'):
@@ -146,12 +146,12 @@ def readConfig():
 def request(args):
     global server_url
     params = urllib.urlencode(args)
-    
+
     if (proxy != ""):
         proxies = {proxy[:proxy.find('://')]: proxy}
     else:
         proxies = None
-        
+
     METHOD = {
       "call_setup": "/setup/",
       "call_test" : "/test/",
@@ -184,7 +184,7 @@ def check_validity(uuid):
     elif xml == "ERROR3":
         print "ERROR: host not found on the server !"
     else:
-        print "ERROR: unexpected error on the server probably!" 
+        print "ERROR: unexpected error on the server probably!"
     exitClient()
 
 def get_ip_address(ifname):
@@ -198,18 +198,18 @@ def call_setup():
      print "Error: client already configured with the server !"
      exitClient()
     print "configuring the server to use banquise..."
-    hostname = socket.gethostname()     
+    hostname = socket.gethostname()
     try:
         priv_ip=get_ip_address('eth0')
     except:
         try:
-            priv_ip=get_ip_address('eth1') 
+            priv_ip=get_ip_address('eth1')
         except:
             try:
                 priv_ip=get_ip_address('wlan0')
             except:
                 priv_ip=get_ip_address('lo')
-    print "You need a valid license key." 
+    print "You need a valid license key."
     license=raw_input("license key : ")
     release=get_release()
     try:
@@ -225,7 +225,7 @@ def call_setup():
         exitClient()
     print xml
     #config.set("DEFAULT","uuid",xml)
-    with open("/etc/banquise.conf","wb") as configfile:    
+    with open("/etc/banquise.conf","wb") as configfile:
      config.write(configfile)
 
 def get_release():
@@ -234,7 +234,7 @@ def get_release():
         description=description.replace('"',"")
     else:
         description="not found"
-        
+
     return description
 
 def set_release():
@@ -256,8 +256,8 @@ def send_sync():
     json_value = json.dumps(installed_packages)
     xml = request({'method': "call_send_sync", 'uuid': uuid, 'packages': json_value})
     print str(xml)
-           
-def send_updates(): 
+
+def send_updates():
     check_validity(uuid)
     # search for local updates
     my = myBackend.backend()
@@ -303,15 +303,15 @@ def send_updates():
           else:
              for po in mylist:
                 my.install(po)
-    
+
     my.buildTransaction()
     saveout = sys.stdout
     sys.stdout = StringIO()
     try:
         my.processTransaction()
-    except: 
+    except:
         sys.stdout = saveout
-        print "Error: unexpected error during transaction !" 
+        print "Error: unexpected error during transaction !"
         exitClient()
     sys.stdout = saveout
     #TODO retrieve the installed packages and notify the database
@@ -331,9 +331,9 @@ def send_updates():
       xml = request({'method': "call_packs_done", 'uuid': uuid, 'packages': json_value, 'packages_skipped': json_value_skip})
       print xml
       if postscript:
-          status,output = commands.getstatusoutput(postscript) 
-          
-def send_list(): 
+          status,output = commands.getstatusoutput(postscript)
+
+def send_list():
     """
     Send list of all available packages in the repositories
     """
@@ -348,7 +348,7 @@ def send_list():
     if not passwd:
         passwd=getpass.getpass()
     json_value = json.dumps(packages_to_add)
-    xml = request({'method': "call_send_list", 'login': login, 
+    xml = request({'method': "call_send_list", 'login': login,
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
     if re.search('incorrect',xml):
         print xml
@@ -362,8 +362,8 @@ def send_list():
             myPckList=pack.split(',')
             info, old_repo= my.getInfo(old_repo,myPckList[4],info)
             notice_update_id,notice_type,tup_update_id,tup_bug=my.getNotice(myPckList[0],myPckList[2],myPckList[3],info)
-            
-            # send here the data per package 
+
+            # send here the data per package
             # TODO
             json_value2 = json.dumps(tup_update_id)
             xml = request({'method': "call_send_metainfo", 'metainfo': json_value2})
@@ -373,7 +373,7 @@ def send_list():
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
         print xml
 
-#if __main__ == 
+#if __main__ ==
 # Main program
 if len(sys.argv) != 2:
    print "Error: a command is needed"
