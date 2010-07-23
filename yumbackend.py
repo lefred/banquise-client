@@ -1,11 +1,14 @@
 import yum
+import sys
 
 class backend:
 
     def __init__(self):
         self.backend = yum.YumBase()
+        #import ipdb; ipdb.set_trace()
         try:
-            info = yum.update_md.UpdateMetadata('base',)
+            self.backend.doRepoSetup()
+            info = yum.update_md.__name__
         except:
             print "Error: yum security plugin is not installed or not loaded !"
             sys.exit(1)
