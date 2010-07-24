@@ -32,6 +32,7 @@ import struct
 import getpass
 import commands
 import re
+import errno
 
 sys.path.append("/usr/share/banquise")
 
@@ -123,8 +124,16 @@ def getuuid(config):
 def checkPid():
     if globals().has_key('pidfile'):
         if os.path.exists(pidfile):
-             print "Error: client already running or dies unexpectly (pid file exists) !"
-             sys.exit(4)
+             file = open(pidfile,"r")
+             line = file.read()
+             try:
+                 os.kill(int(line), 0)
+             except OSError, err:
+                 if err.errno == errno.ESRCH:
+                     print "Warning: PID file exists but client died unexpectedly !"
+             else:
+                 print "Error: client already running (pid file exists) !"
+                 sys.exit(4)
         FILE = open(pidfile,"w")
         FILE.write(str(os.getpid()))
         FILE.close()
