@@ -1,0 +1,6 @@
+.project
+*.pyc
+*~
+.pydevproject
+settings.py
+urls.py
