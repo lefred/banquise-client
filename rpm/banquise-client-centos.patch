@@ -1,5 +1,5 @@
---- banquise.py	2010-01-12 00:22:35.961550385 +0100
-+++ ../banquise.centos	2010-01-12 00:20:40.778544435 +0100
+--- banquise.py	2010-11-15 22:14:02.123398003 +0100
++++ banquise.py.new	2010-11-15 22:15:13.755398003 +0100
 @@ -16,7 +16,7 @@
  #    You should have received a copy of the GNU General Public License
  #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -9,15 +9,15 @@
  import urllib
  import socket
  import sys
-@@ -181,8 +181,9 @@
+@@ -234,8 +234,9 @@
          exitClient()
      print xml
-     config.set("DEFAULT","uuid",xml)
--    with open("/etc/banquise.conf","wb") as configfile:    
+     #config.set("DEFAULT","uuid",xml)
+-    with open("/etc/banquise.conf","wb") as configfile:
 -     config.write(configfile)
-+    f=open("/etc/banquise.conf","wb")    
++    f=open("/etc/banquise.conf","wb")
 +    config.write(f)
 +    f.close()
  
  def get_release():
-     # TODO : use lsb_release
+     if os.path.exists('/usr/bin/lsb_release'):
