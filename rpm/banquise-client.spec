@@ -1,24 +1,61 @@
 Name:		banquise-client
 Version:	0.5
-Release:	5%{?dist}
+Release:	7%{?dist}
 License:	GPLv3
 Group:		System
 Summary:	Client of banquise package system
-URL:		http://www.lefred.be
+URL:		http://www.banquise.be
 Packager:	Frederic Descamps
 Source0:	%{name}-%{version}.tgz
 Source1:	banquise
 Patch0:		%{name}-centos.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:	noarch
-Requires:	python, yum, python-hashlib, banquise-client-backend   
 
 %description
 Client part of the banquise project
 
+%package 	core
+Summary:	Client backend of banquise package system
+Requires:	python, yum, banquise-client-backend   
+%if 1%{?fedora}
+Requires:	python-hashlib   
+%endif
+Group:		System
+
+%description    core
+Client core backend part of the banquise project
+
+%package	yum
+Summary:	Client yum backend of banquise package system
+Requires:       python, yum, banquise-client-core
+%if 0%{?fedora}
+Requires:	 yum-plugin-security
+%endif
+%if 1%{?fedora}
+Requires:	 yum-security
+%endif
+Provides:       banquise-client-backend
+Group:		System
+
+%description	yum
+Client yum backend part of the banquise project
+
+%package	smart
+Summary:	Client smart backend of banquise package system
+Requires:       python, smart, banquise-client-core
+Provides:       banquise-client-backend
+Group:		System
+
+%description	smart
+Client smart backend part of the banquise project
+
+
 %prep
 %setup 
+%if 1%{?fedora}
 %patch0 
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -28,15 +65,29 @@ cp %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/etc/cron.daily
 cp banquise.py $RPM_BUILD_ROOT%{_bindir}/banquise
 cp banquise.conf-example $RPM_BUILD_ROOT%{_sysconfdir}/banquise.conf
 
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/banquise/
+cp yumbackend.py $RPM_BUILD_ROOT/%{_datadir}/banquise/
+cp smartbackend.py $RPM_BUILD_ROOT/%{_datadir}/banquise/
+
+
+
 
 %clean
 #rm -rf $RPM_BUILD_ROOT
 
-%files
+%files core
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_sysconfdir}/etc/cron.daily/banquise
 %config(noreplace) %{_sysconfdir}/banquise.conf
+
+%files yum
+%defattr(-,root,root,-)
+%{_datadir}/banquise/yum*
+
+%files smart
+%defattr(-,root,root,-)
+%{_datadir}/banquise/smart*
 
 %changelog
 * Tue Feb 23 2010 - Frederic Descamps <lefred@inuits.be> 0.5-5

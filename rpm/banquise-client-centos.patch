@@ -1,0 +1,23 @@
+--- banquise.py	2010-01-12 00:22:35.961550385 +0100
++++ ../banquise.centos	2010-01-12 00:20:40.778544435 +0100
+@@ -16,7 +16,7 @@
+ #    You should have received a copy of the GNU General Public License
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+-import json
++import simplejson as json
+ import urllib
+ import socket
+ import sys
+@@ -181,8 +181,9 @@
+         exitClient()
+     print xml
+     config.set("DEFAULT","uuid",xml)
+-    with open("/etc/banquise.conf","wb") as configfile:    
+-     config.write(configfile)
++    f=open("/etc/banquise.conf","wb")    
++    config.write(f)
++    f.close()
+ 
+ def get_release():
+     # TODO : use lsb_release
