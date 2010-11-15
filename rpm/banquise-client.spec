@@ -90,6 +90,8 @@ cp smartbackend.py $RPM_BUILD_ROOT/%{_datadir}/banquise/
 %{_datadir}/banquise/smart*
 
 %changelog
+* Mon Nov 15 2010 - Frederic Descamps <lefred.descamps@gmail.com> 0.5-7
+- version 0.5-7 new rpms
 * Tue Feb 23 2010 - Frederic Descamps <lefred@inuits.be> 0.5-5
 - version 0.5-5 metabug info added and memory usage optimized
 * Thu Feb 18 2010 - Frederic Descamps <lefred@inuits.be> 0.5-4
