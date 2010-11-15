@@ -18,7 +18,8 @@ Client part of the banquise project
 %package 	core
 Summary:	Client backend of banquise package system
 Requires:	python, yum, banquise-client-backend   
-%if 1%{?fedora}
+%if 0%{?fedora} > 1
+%else
 Requires:	python-hashlib   
 %endif
 Group:		System
@@ -29,10 +30,9 @@ Client core backend part of the banquise project
 %package	yum
 Summary:	Client yum backend of banquise package system
 Requires:       python, yum, banquise-client-core
-%if 0%{?fedora}
+%if 0%{?fedora} > 1
 Requires:	 yum-plugin-security
-%endif
-%if 1%{?fedora}
+%else
 Requires:	 yum-security
 %endif
 Provides:       banquise-client-backend
@@ -53,7 +53,10 @@ Client smart backend part of the banquise project
 
 %prep
 %setup 
-%if 1%{?fedora}
+%if 0%{?fedora}  > 1
+echo IN FEDORA %{fedora}
+%else
+echo NOT IN FEDORA 
 %patch0 
 %endif
 
