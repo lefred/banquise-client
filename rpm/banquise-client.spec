@@ -20,7 +20,7 @@ Summary:	Client backend of banquise package system
 Requires:	python, yum, banquise-client-backend   
 %if 0%{?fedora} > 1
 %else
-Requires:	python-hashlib   
+Requires:	python-hashlib, python-simplejson  
 %endif
 Group:		System
 
