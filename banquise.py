@@ -232,7 +232,7 @@ def call_setup():
     if xml == "ERROR1":
         print "ERROR: this host (or another with the same name) is already linked to a valid contract!"
         exitClient()
-    #config.set("DEFAULT","uuid",xml)
+    config.set("DEFAULT","uuid",xml)
     with open("/etc/banquise.conf","wb") as configfile:
      config.write(configfile)
 

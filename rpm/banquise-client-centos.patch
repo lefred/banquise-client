@@ -12,7 +12,7 @@
 @@ -234,8 +234,9 @@
          exitClient()
      print xml
-     #config.set("DEFAULT","uuid",xml)
+     config.set("DEFAULT","uuid",xml)
 -    with open("/etc/banquise.conf","wb") as configfile:
 -     config.write(configfile)
 +    f=open("/etc/banquise.conf","wb")
