@@ -62,9 +62,9 @@ echo NOT IN FEDORA
 
 %install
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/etc/cron.daily/
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily/
 mkdir -p $RPM_BUILD_ROOT%{_bindir}/
-cp %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/etc/cron.daily
+cp %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/cron.daily
 cp banquise.py $RPM_BUILD_ROOT%{_bindir}/banquise
 cp banquise.conf-example $RPM_BUILD_ROOT%{_sysconfdir}/banquise.conf
 
@@ -81,7 +81,7 @@ cp smartbackend.py $RPM_BUILD_ROOT/%{_datadir}/banquise/
 %files core
 %defattr(-,root,root,-)
 %{_bindir}/*
-%{_sysconfdir}/etc/cron.daily/banquise
+%{_sysconfdir}/cron.daily/banquise
 %config(noreplace) %{_sysconfdir}/banquise.conf
 
 %files yum
