@@ -175,6 +175,8 @@ def request(args):
       "call_send_metainfo" : "/metainfo/",
       "call_send_metabug" : "/metabug/",
     }
+    timeout = 600
+    socket.setdefaulttimeout(timeout)
     return urllib.urlopen(server_url+METHOD.get(args.get('method')), params, proxies).read()
 
 def call_test(uuid):
