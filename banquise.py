@@ -62,12 +62,12 @@ def parseConfig():
     if not os.path.exists(r'/etc/banquise.conf'):
       print "Error: client configuration file missing !"
       exitClient()
-    config=readConfig()
+    config = readConfig()
     #check server url
     if not config.defaults()['server_url']:
      print "Error: client configuration, server_url is not set !"
      exitClient()
-    server_url=config.defaults()['server_url']
+    server_url = config.defaults()['server_url']
     #check client type
     if not config.defaults()['type']:
      print "Error: client configuration, client type is not set !"
@@ -75,7 +75,7 @@ def parseConfig():
     if config.defaults()['type'] != 'REST' and config.defaults()['type'] != 'XMPP':
      print "Error: client configuration, client type value is wrong, it should be REST or XMPP !"
      exitClient()
-    type=config.defaults()['type']
+    type = config.defaults()['type']
 
     #check backend
     if not config.defaults()['backend']:
@@ -84,7 +84,7 @@ def parseConfig():
     if config.defaults()['backend'] != 'yum' and config.defaults()['backend'] != 'smart':
      print "Error: client configuration, client backend value is wrong, it should be YUM or SMART !"
      exitClient()
-    backend=config.defaults()['backend']
+    backend = config.defaults()['backend']
 
     myBackend = __import__(backend + "backend")
 
@@ -92,32 +92,32 @@ def parseConfig():
     if not config.defaults()['pid']:
      print "Error: client configuration, pid setting not defined !"
      exitClient()
-    pidfile=config.defaults()['pid']
+    pidfile = config.defaults()['pid']
     try:
-        login=config.defaults()['login']
+        login = config.defaults()['login']
     except:
-        login=""
+        login = ""
     try:
-        passwd=config.defaults()['passwd']
+        passwd = config.defaults()['passwd']
     except:
-        passwd=""
+        passwd = ""
     try:
-        postscript=config.defaults()['postscript']
+        postscript = config.defaults()['postscript']
     except:
-        postscript=""
+        postscript = ""
     try:
         proxy = config.defaults()['proxy']
     except:
         proxy = ""
     #check uuid
-    uuid=getuuid(config)
+    uuid = getuuid(config)
     return True
 
 def getuuid(config):
     try:
-      value=config.defaults()['uuid']
+      value = config.defaults()['uuid']
     except KeyError:
-      value=None
+      value = None
     return value
 
 
@@ -184,7 +184,7 @@ def call_test(uuid):
           print "Communication with server ok"
 
 def check_validity(uuid):
-    version=showVersion()
+    version = showVersion()
     xml = request({'method': "call_test", 'uuid': uuid, 'version': version})
     if xml == "OK":
         return True
@@ -211,18 +211,18 @@ def call_setup():
     print "configuring the server to use banquise..."
     hostname = socket.gethostname()
     try:
-        priv_ip=get_ip_address('eth0')
+        priv_ip = get_ip_address('eth0')
     except:
         try:
-            priv_ip=get_ip_address('eth1')
+            priv_ip = get_ip_address('eth1')
         except:
             try:
-                priv_ip=get_ip_address('wlan0')
+                priv_ip = get_ip_address('wlan0')
             except:
-                priv_ip=get_ip_address('lo')
+                priv_ip = get_ip_address('lo')
     print "You need a valid license key."
-    license=raw_input("license key : ")
-    release=get_release()
+    license = raw_input("license key : ")
+    release = get_release()
     try:
         xml = request({'method': "call_setup", 'license': license, 'hostname': hostname, 'release': release, 'priv_ip': priv_ip})
     except:
@@ -240,10 +240,10 @@ def call_setup():
 
 def get_release():
     if os.path.exists('/usr/bin/lsb_release'):
-        description=commands.getoutput("/usr/bin/lsb_release -ds")
-        description=description.replace('"',"")
+        description = commands.getoutput("/usr/bin/lsb_release -ds")
+        description = description.replace('"',"")
     else:
-        description="not found"
+        description = "not found"
 
     return description
 
@@ -273,9 +273,9 @@ def send_updates():
     my = myBackend.backend()
     if (proxy != ""):
         my.setProxy(proxy)
-    packages_to_update=[]
-    metainfo_to_update=[]
-    packages_skipped=[]
+    packages_to_update = []
+    metainfo_to_update = []
+    packages_skipped = []
     packages_to_update,metainfo_to_update,metabug_to_update = my.getUpdatesList()
     for metainfo in metainfo_to_update:
         json_value2 = json.dumps(metainfo)
@@ -285,7 +285,7 @@ def send_updates():
         xml = request({'method': "call_send_metabug", 'metabug': json_value3})
     for children in packages_to_update:
         tab = children.split(",")
-        changelog=my.getChangeLog(tab[0],tab[1],tab[2],tab[3]) 
+        changelog = my.getChangeLog(tab[0],tab[1],tab[2],tab[3]) 
         json_value = json.dumps(children)
         pack_id = request({'method': "call_send_update", 'uuid': uuid, 'packages': json_value})
         json_value = json.dumps(changelog)
@@ -294,7 +294,7 @@ def send_updates():
     print "to update : " +str(xml)
     for children in json.loads(xml):
           #print "do this : yum update "+children
-          myPckList=children.split(',')
+          myPckList = children.split(',')
           mylist = my.search(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
           if not mylist:
               print "skipping %s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3])
@@ -305,7 +305,7 @@ def send_updates():
     xml = request({'method': "call_send_install", 'uuid': uuid})
     print "to install : " +str(xml)
     for children in json.loads(xml):
-          myPckList=children.split(',')
+          myPckList = children.split(',')
           mylist = my.search(name=myPckList[0],arch=myPckList[1],ver=myPckList[2],rel=myPckList[3])
           if not mylist:
               print "skipping %s,%s,%s,%s" % (myPckList[0], myPckList[1],myPckList[2], myPckList[3])
@@ -351,12 +351,12 @@ def send_list():
     global passwd
     check_validity(uuid)
     my = myBackend.backend()
-    packages_to_add=[]
+    packages_to_add = []
     print "You need an admin login to perform this operation."
     if not login:
-        login=raw_input("Login : ")
+        login = raw_input("Login : ")
     if not passwd:
-        passwd=getpass.getpass()
+        passwd = getpass.getpass()
     json_value = json.dumps(packages_to_add)
     xml = request({'method': "call_send_list", 'login': login,
                    'passwd': passwd, 'uuid': uuid, 'packages': json_value})
@@ -366,11 +366,11 @@ def send_list():
         print "Warning: this operation can be very long ! (+/- 1h)"
         packages_to_add = my.packageLists()
         json_value = json.dumps(packages_to_add)
-        old_repo=""
-        info=None
+        old_repo = ""
+        info = None
         for pack in packages_to_add:
-            myPckList=pack.split(',')
-            info, old_repo= my.getInfo(old_repo,myPckList[4],info)
+            myPckList = pack.split(',')
+            info, old_repo = my.getInfo(old_repo,myPckList[4],info)
             notice_update_id,notice_type,tup_update_id,tup_bug=my.getNotice(myPckList[0],myPckList[2],myPckList[3],info)
 
             # send here the data per package
@@ -391,10 +391,10 @@ if len(sys.argv) != 2:
 else:
   parseConfig()
   checkPid()
-  if sys.argv[1]   == 'setup':
+  if sys.argv[1]  == 'setup':
         call_setup()
   else: 
-     if sys.argv[1]   == 'test':
+     if sys.argv[1]  == 'test':
         call_test(uuid);
      elif sys.argv[1] == 'setrel':
         set_release()
