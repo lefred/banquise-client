@@ -37,7 +37,7 @@ sys.path.append("/usr/share/banquise")
 global uuid
 global server_url
 global typecall
-global pidfile
+global pidfilename
 global config
 global postscript
 
@@ -48,7 +48,7 @@ def parse_config():
     global uuid
     global server_url
     global typecall
-    global pidfile
+    global pidfilename
     global config
     global login
     global passwd
@@ -94,7 +94,7 @@ def parse_config():
     if not config.defaults()['pid']:
         print "Error: client configuration, pid setting not defined !"
         exit_client()
-    pidfile = config.defaults()['pid']
+    pidfilename = config.defaults()['pid']
     try:
         login = config.defaults()['login']
     except:
@@ -124,9 +124,9 @@ def getuuid(config):
 
 
 def check_pid():
-    if globals().has_key('pidfile'):
-        if os.path.exists(pidfile):
-            pidfile = open(pidfile,"r")
+    if globals().has_key('pidfilename'):
+        if os.path.exists(pidfilename):
+            pidfile = open(pidfilename,"r")
             line = pidfile.read()
             try:
                 os.kill(int(line), 0)
@@ -137,13 +137,13 @@ def check_pid():
             else:
                 print "Error: client already running (pid file exists) !"
                 sys.exit(4)
-        pidfile = open(pidfile,"w")
+        pidfile = open(pidfilename,"w")
         pidfile.write(str(os.getpid()))
         pidfile.close()
 
 def exit_client():
-    if globals().has_key('pidfile'):
-        os.remove(pidfile)
+    if globals().has_key('pidfilename'):
+        os.remove(pidfilename)
     sys.exit(1)
 
 def read_config():
@@ -270,8 +270,8 @@ def set_release():
 
 def send_sync():
     check_validity(uuid)
-    mybck = myBackend.backend()
-    installed_packages = mybck.getInstalledList()
+    mybck = myBackend.Backend()
+    installed_packages = mybck.get_installed_list()
     json_value = json.dumps(installed_packages)
     xml = request({'method': "call_send_sync", 'uuid': uuid, 
                    'packages': json_value})
@@ -280,14 +280,14 @@ def send_sync():
 def send_updates():
     check_validity(uuid)
     # search for local updates
-    mybck = myBackend.backend()
+    mybck = myBackend.Backend()
     if (proxy != ""):
-        mybck.setProxy(proxy)
+        mybck.set_proxy(proxy)
     packages_to_update = []
     metainfo_to_update = []
     packages_skipped = []
     packages_to_update, metainfo_to_update, metabug_to_update = \
-            mybck.getUpdatesList()
+            mybck.get_updates_list()
     for metainfo in metainfo_to_update:
         json_value2 = json.dumps(metainfo)
         xml = request({'method': "call_send_metainfo", 'metainfo': json_value2})
@@ -296,7 +296,7 @@ def send_updates():
         xml = request({'method': "call_send_metabug", 'metabug': json_value3})
     for children in packages_to_update:
         tab = children.split(",")
-        changelog = mybck.getChangeLog(tab[0], tab[1], tab[2], tab[3])
+        changelog = mybck.get_change_log(tab[0], tab[1], tab[2], tab[3])
         json_value = json.dumps(children)
         pack_id = request({'method': "call_send_update",
                            'uuid': uuid, 'packages': json_value})
@@ -339,11 +339,11 @@ def send_updates():
             for pobj in mylist:
                 mybck.install(pobj)
 
-    mybck.buildTransaction()
+    mybck.build_transaction()
     saveout = sys.stdout
     sys.stdout = StringIO()
     try:
-        mybck.processTransaction()
+        mybck.process_transaction()
     except:
         sys.stdout = saveout
         print "Error: unexpected error during transaction !"
@@ -352,7 +352,7 @@ def send_updates():
     #TODO retrieve the installed packages and notify the database
     #for children in my.ts.ts.getKeys():
     #  print children
-    packages_updated = mybck.getKeys()
+    packages_updated = mybck.get_keys()
     if packages_updated == None:
         print "nothing set to update"
         if packages_skipped:
@@ -393,13 +393,13 @@ def send_list():
         print xml
     else:
         print "Warning: this operation can be very long ! (+/- 1h)"
-        packages_to_add = mybck.packageLists()
+        packages_to_add = mybck.package_lists()
         json_value = json.dumps(packages_to_add)
         old_repo = ""
         info = None
         for pack in packages_to_add:
             my_pack_list = pack.split(',')
-            info, old_repo = mybck.getInfo(old_repo, my_pack_list[4], info)
+            info, old_repo = mybck.get_info(old_repo, my_pack_list[4], info)
             notice_update_id, notice_type, tup_update_id,
             tup_bug = my.getNotice(my_pack_list[0],
                                    my_pack_list[2], my_pack_list[3], info)
