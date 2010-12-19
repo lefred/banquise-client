@@ -149,9 +149,9 @@ class Backend:
         return self.backend.pkgSack.searchNevra(name, epoch, ver, rel, arch)
 
 
-    def cleanup_list(self,f):
-        if f:
-            return [i for i in list(f) if i]
+    def cleanup_list(self, field):
+        if field:
+            return [i for i in list(field) if i]
         else:
             return []
 
