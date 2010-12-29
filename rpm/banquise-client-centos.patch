@@ -1,20 +1,11 @@
---- banquise.py	2010-11-15 22:14:02.123398003 +0100
-+++ banquise.py.new	2010-11-15 22:15:13.755398003 +0100
-@@ -16,7 +16,7 @@
- #    You should have received a copy of the GNU General Public License
- #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- 
--import json
-+import simplejson as json
- import urllib
- import socket
- import sys
-@@ -234,8 +234,9 @@
-         exitClient()
-     print xml
-     config.set("DEFAULT","uuid",xml)
+--- banquise.py	2010-12-29 21:40:57.270842267 +0100
++++ banquise.centos.py	2010-12-29 21:40:31.377842267 +0100
+@@ -244,8 +244,9 @@
+                 "already linked to a valid contract!"
+         exit_client()
+     config.set("DEFAULT", "uuid", xml)
 -    with open("/etc/banquise.conf","wb") as configfile:
--     config.write(configfile)
+-        config.write(configfile)
 +    f=open("/etc/banquise.conf","wb")
 +    config.write(f)
 +    f.close()

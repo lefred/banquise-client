@@ -244,7 +244,7 @@ def call_setup():
                 "already linked to a valid contract!"
         exit_client()
     config.set("DEFAULT", "uuid", xml)
-    with open("/etc/banquise.conf", "wb") as configfile:
+    with open("/etc/banquise.conf","wb") as configfile:
         config.write(configfile)
 
 def get_release():
