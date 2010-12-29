@@ -1,6 +1,6 @@
 Name:		banquise-client
 Version:	0.5
-Release:	7%{?dist}
+Release:	8%{?dist}
 License:	GPLv3
 Group:		System
 Summary:	Client of banquise package system
