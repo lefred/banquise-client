@@ -7,8 +7,7 @@ class Backend:
 
     def __init__(self):
         self.ctrl = init()
-        initDistro(self.ctr
-)
+        initDistro(self.ctrl)
         initPlugins()
         initPsyco()
         self.ctrl.reloadChannels()
