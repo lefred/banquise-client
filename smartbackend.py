@@ -3,11 +3,12 @@ from smart.commands import *
 from smart.transaction import *
 from smart import *
 
-class backend:
+class Backend:
 
     def __init__(self):
         self.ctrl = init()
-        initDistro(self.ctrl)
+        initDistro(self.ctr
+)
         initPlugins()
         initPsyco()
         self.ctrl.reloadChannels()
@@ -15,23 +16,23 @@ class backend:
         self.trans = Transaction(self.cache, PolicyInstall)
 
 
-    def packageLists(self):
+    def package_lists(self):
         """Get a list of all available packages."""
         packages_to_add = []
 
         for pkg in self.cache.getPackages():
-            packages_to_add.append(self.formatPackage(pkg))
+            packages_to_add.append(self.format_package(pkg))
 
         return packages_to_add
 
 
-    def getChangeLog(self,name,arch,ver,rel):
-        matches = self.search(name=name, arch=arch,
-                              ver=ver, rel=rel)
+    def get_change_log(self, name, arch, ver, rel):
+        self.search(name=name, arch=arch,
+                    ver=ver, rel=rel)
         return []
 
 
-    def getUpdatesList(self):
+    def get_updates_list(self):
         """Get a list of all packages with a pending update."""
         packages_to_update = []
         metainfo_to_update = []
@@ -44,18 +45,18 @@ class backend:
                 trans.enqueue(pkg, UPGRADE)
 
         for pkg in trans._queue:
-            packages_to_update.append(self.formatPackage(pkg))
+            packages_to_update.append(self.format_package(pkg))
 
-        return packages_to_update,metainfo_to_update,metabug_to_update
+        return packages_to_update, metainfo_to_update, metabug_to_update
 
 
-    def getInstalledList(self):
+    def get_installed_list(self):
         """Get a list of all installed packages."""
         packages_installed = []
 
         for pkg in self.cache.getPackages():
             if pkg.installed:
-                packages_installed.append(self.formatPackage(pkg))
+                packages_installed.append(self.format_package(pkg))
 
         return packages_installed
 
@@ -70,12 +71,12 @@ class backend:
         self.trans.enqueue(pkg, INSTALL)
 
 
-    def buildTransaction(self):
+    def build_transaction(self):
         """Build transaction"""
         self.trans.run()
 
 
-    def processTransaction(self):
+    def process_transaction(self):
         """Run transaction"""
         self.ctrl.commitTransaction(self.trans, confirm=False)
 
@@ -96,26 +97,31 @@ class backend:
         return packages
 
 
-    def getKeys(self):
+    def get_keys(self):
         """List updated/installed packages to send back to the server."""
         if (self.trans.numTaskCompleted == 0):
             return None
         else:
             packages_updated = []
             for pkg in self.trans.getChangeSet().getPersistentState():
-                ratio, results, suggestions = self.ctrl.search(pkg[1] + "-" + pkg[2], addprovides=False)
+                ratio, results, suggestions =  self.ctrl.search( \
+                                               pkg[1] + "-" + pkg[2], 
+                                               addprovides=False)
                 if not results:
                     return False
                 else:
                     for obj in results:
                         if isinstance(obj, Package):
-                            pkginfo = self.formatPackage(obj).split(',')
-                packages_updated.append("%s,%s,%s,%s" % (pkginfo[0], pkginfo[1], pkginfo[2], pkginfo[3]))
+                            pkginfo = self.format_package(obj).split(',')
+                packages_updated.append("%s,%s,%s,%s" % (pkginfo[0], 
+                                                         pkginfo[1], 
+                                                         pkginfo[2], 
+                                                         pkginfo[3]))
 
             return packages_updated
 
 
-    def formatPackage(self, pkg):
+    def format_package(self, pkg):
         """Helper function to correctly format package info"""
         seen = {}
         info = pkg.version
@@ -128,15 +134,21 @@ class backend:
         for loader in pkg.loaders:
             channels.append(loader.getChannel().getAlias())
             if loader not in seen:
-                    seen[loader] = True
-                    errata = loader.getErrata(pkg)
-                    if errata:
-                        print "   ", _("Type:"), errata.getType()
+                seen[loader] = True
+                errata = loader.getErrata(pkg)
+                if errata:
+                    print "   ", _("Type:"), errata.getType()
         channels.sort()
 
-        return "%s,%s,%s,%s,%s,%s,%s" % (pkg.name, arch, version, release, channels[0], '', '')
+        return "%s,%s,%s,%s,%s,%s,%s" % (pkg.name,
+                                         arch,
+                                         version,
+                                         release,
+                                         channels[0],
+                                         '',
+                                         '')
 
 
-    def setProxy(self, proxy):
+    def set_proxy(self, proxy):
         """Set proxy"""
         sysconf.set("http-proxy", proxy)
